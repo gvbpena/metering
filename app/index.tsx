@@ -17,7 +17,7 @@ const Index = () => {
                 console.log(userRole);
                 switch (userRole) {
                     case "Electrician":
-                        setRedirectPath("/(electricianv2)");
+                        setRedirectPath("/(electrician)");
                         break;
                     case "Inspector":
                         setRedirectPath("/(inspector)");

@@ -25,7 +25,7 @@ const ClientAddressPage = () => {
         <>
             <StackScreen
                 title="Customer Address"
-                nextRoute="/(electricianv2)_setup/page6"
+                nextRoute="/(electrician)_setup/page6"
                 nextLabel="Next"
                 onNext={() => {
                     if (!isFormComplete) {

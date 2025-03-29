@@ -31,7 +31,7 @@ export default function LoginScreen() {
             }
             switch (role) {
                 case "Electrician":
-                    router.replace("/(electricianv2)" as any);
+                    router.replace("/(electrician)" as any);
                     break;
                 // case "Inspector":
                 //     router.replace("/(inspector)");
@@ -138,11 +138,6 @@ export default function LoginScreen() {
                     <Text className="text-white text-lg font-semibold">Login</Text>
                 </Pressable>
             )}
-            <Pressable onPress={() => router.replace("/register" as any)} className="mt-4">
-                <Text className="text-center text-gray-500 text-sm">
-                    Don't have an account? <Text className="text-[#EA4335] font-semibold">Register</Text>
-                </Text>
-            </Pressable>
             <Text className="mt-5 text-center text-gray-500 text-sm">@2025 • All rights reserved •{"\n"} Powered by Genius</Text>
         </View>
     );

@@ -474,7 +474,7 @@ const DetailsScreen = () => {
         };
         console.log("Data to pass:", groupedFields);
         router.push({
-            pathname: "/(electricianv2)_fa/edit_page",
+            pathname: "/(electrician)_fa/edit_page",
             params: {
                 application_id: applicationId,
                 groupedFields: JSON.stringify(groupedFields),

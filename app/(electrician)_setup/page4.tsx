@@ -40,7 +40,7 @@ const ParentsDetailsPage: React.FC = () => {
         <>
             <StackScreen
                 title="Parents Details"
-                nextRoute="/(electricianv2)_setup/page5"
+                nextRoute="/(electrician)_setup/page5"
                 nextLabel="Next"
                 onNext={() => {
                     if (!isFormComplete || !isRepresentativeComplete) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { View, Text, TextInput, FlatList, RefreshControl, TouchableOpacity, Animated } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
-import Icon from "react-native-vector-icons/AntDesign";
+import { AntDesign } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { useSync } from "@/context/_syncContextv2";
 import SyncStatusPage from "@/components/_syncStatusv2";
@@ -105,7 +105,7 @@ const ElectricianPage = () => {
         } finally {
             setRefreshing(false);
         }
-    }, [checkAndSyncOrders, fetchData, fetchStatuses]);
+    }, [checkAndSyncOrders, fetchData, fetchStatuses, startStatusSync]); // Added startStatusSync dependency
 
     useFocusEffect(
         useCallback(() => {
@@ -143,7 +143,8 @@ const ElectricianPage = () => {
     return (
         <View className="flex-1 bg-gray-100 p-4">
             <View className="my-4 flex-row items-center bg-white rounded-lg px-5 py-4 shadow-md border border-gray-300">
-                <Icon name="search1" size={28} color="#555" />
+                {/* Changed Component: Use AntDesign instead of Icon */}
+                <AntDesign name="search1" size={28} color="#555" />
                 <TextInput
                     className="flex-1 pl-4 text-xl text-gray-900"
                     placeholder="Search Application..."
@@ -184,7 +185,7 @@ const ElectricianPage = () => {
                     return (
                         <TouchableOpacity
                             className="px-6 p-4 mb-5 border border-gray-300 rounded-xl shadow-md bg-white"
-                            onPress={() => router.push(`/(electricianv2)_fa/${item.application_id}`)}
+                            onPress={() => router.push(`/(electrician)_fa/${item.application_id}` as any)}
                         >
                             <View className="flex-row justify-between items-center mb-3">
                                 <Text className="text-2xl font-bold">{item.application_id}</Text>
@@ -205,11 +206,12 @@ const ElectricianPage = () => {
                 }}
             />
             {showButton && (
-                <View className="absolute bottom-6 right-6">
-                    <TouchableOpacity onPress={() => router.push("/(electricianv2)_setup/page1")} activeOpacity={1.0}>
-                        <Animated.View className="flex-row items-center justify-center rounded-full bg-red-500 px-6 py-3 shadow-2xl active:scale-95 transition-all">
-                            <Text className="text-lg font-semibold text-white tracking-wide">Get Started</Text>
-                        </Animated.View>
+                <View className="flex-1">
+                    <TouchableOpacity
+                        onPress={() => router.push("/(electrician)_setup/page1")}
+                        className="absolute bottom-5 right-5 bg-blue-500 px-5 py-3 rounded-full shadow-lg"
+                    >
+                        <Text className="text-white font-bold">Get Started</Text>
                     </TouchableOpacity>
                 </View>
             )}

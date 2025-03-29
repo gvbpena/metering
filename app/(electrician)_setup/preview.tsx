@@ -9,7 +9,7 @@ const PreviewPage = () => {
 
     return (
         <>
-            <StackScreen title="Client Additional Info" nextRoute="/(electricianv2)_setup/preview" nextLabel="Done" onNext={() => true} />
+            <StackScreen title="Client Additional Info" nextRoute="/(electrician)_setup/preview" nextLabel="Done" onNext={() => true} />
             <ScrollView className="space-y-6 mx-4">
                 <View className="mt-4">
                     {groupedPages.map((section) => (

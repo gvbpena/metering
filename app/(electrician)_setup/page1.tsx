@@ -75,7 +75,7 @@ const ClientInformation = () => {
         <>
             <StackScreen
                 title="Client Information"
-                nextRoute="/(electricianv2)_setup/page2"
+                nextRoute="/(electrician)_setup/page2"
                 nextLabel="Next"
                 onNext={() => true} // Pass a function returning true
             />

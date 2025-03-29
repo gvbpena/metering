@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useFormData } from "@/app/(electricianv2)_setup/_context";
+import { useFormData } from "@/app/(electrician)_setup/_context";
 import { useState } from "react";
 import { useSubmitData } from "./submit";
 
@@ -34,7 +34,7 @@ export default function Navbar({ title, nextRoute, nextLabel, onNext }: NavbarPr
         try {
             await submitApplication();
             Alert.alert("Application submitted successfully.");
-            router.replace("/(electricianv2)");
+            router.replace("/(electrician)");
         } catch (error: unknown) {
             let errorMessage = "Failed to submit application.";
             if (error instanceof Error) {

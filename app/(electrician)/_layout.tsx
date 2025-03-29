@@ -5,18 +5,31 @@ import { View, Text, ActivityIndicator, Linking, Alert } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Constants from "expo-constants";
 import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 const API_URL = "https://genius-dev.aboitizpower.com/mygenius2/metering_api/metering_update/metering_checkupdate.php";
 const API_HEADERS = { "Content-Type": "application/json" };
 
 export default function RootLayout() {
     return (
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
             <NetworkProvider>
                 <SyncProvider>
                     <Tabs>
-                        <Tabs.Screen name="index" options={{ headerTitle: () => <NetworkStatusTitle /> }} />
-                        <Tabs.Screen name="profile" options={{ headerTitle: () => <NetworkStatusTitle /> }} />
+                        <Tabs.Screen
+                            name="index"
+                            options={{
+                                headerTitle: () => <NetworkStatusTitle />,
+                                tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+                            }}
+                        />
+                        <Tabs.Screen
+                            name="profile"
+                            options={{
+                                headerTitle: () => <NetworkStatusTitle />,
+                                tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+                            }}
+                        />
                     </Tabs>
                 </SyncProvider>
             </NetworkProvider>
@@ -92,6 +105,7 @@ const NetworkStatusTitle = () => {
                 const messageValue = data.message || data.status || "Unknown status";
                 const fetchedUrl = data.url || null;
                 const fetchedVersion = data.version || null;
+
                 setUpdateStatus(messageValue);
                 if (statusValue === "has_update" && fetchedUrl) {
                     setUpdateUrl(fetchedUrl);
@@ -104,6 +118,7 @@ const NetworkStatusTitle = () => {
                     }, 100);
                 }
             } catch (err: any) {
+                console.error("Update check failed:", err); // Keep console error for debugging
                 setError("Failed to check updates.");
                 setUpdateStatus(null);
                 setUpdateUrl(null);

@@ -61,37 +61,6 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             setSyncing(false);
         }
     };
-    // const startSync = async () => {
-    //     if (syncing) return;
-    //     setSyncing(true);
-    //     try {
-    //         const result = await db.getFirstAsync<{ count?: number }>(
-    //             "SELECT COUNT(*) as count FROM metering_application WHERE status = 'Endorsed' AND sync_status = 'Unsynced'"
-    //         );
-
-    //         if (!result || (result.count ?? 0) === 0) {
-    //             console.log("No 'Endorsed' applications with 'Unsynced' status. Sync aborted.");
-    //             return;
-    //         }
-
-    //         await syncMAData();
-    //         const imageResult = await db.getFirstAsync<{ count?: number }>(
-    //             `SELECT COUNT(*) as count
-    //              FROM images i
-    //              JOIN metering_application ma ON i.reference_id = ma.application_id
-    //              WHERE i.status = 'Unsynced' AND ma.status = 'Endorsed'`
-    //         );
-
-    //         if (imageResult && (imageResult.count ?? 0) > 0) {
-    //             await syncImages();
-    //         }
-    //     } catch (error) {
-    //         console.error("Sync failed:", error);
-    //     } finally {
-    //         setSyncing(false);
-    //     }
-    // };
-
     const startStatusSync = async () => {
         setStatusSyncing(true);
         try {

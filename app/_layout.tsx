@@ -63,57 +63,15 @@ export default function Layout() {
             </View>
         );
     }
-    // const { isConnected, connectionSpeed, connectionStatusIcon } = useNetworkContext();
     return (
         <SQLiteProvider databaseName="database.db">
             <NetworkProvider>
                 <Stack>
-                    <Stack.Screen
-                        name="work_order/work_order"
-                        options={{
-                            headerShown: true,
-                        }}
-                    />
-                    <Stack.Screen name="work_order/download_workorder" />
-                    <Stack.Screen name="work_order/[id]" />
-                    <Stack.Screen
-                        name="wo_setup/[id]"
-                        options={{
-                            headerShown: true,
-                            title: "Task Activity",
-                        }}
-                    />
-                    <Stack.Screen
-                        name="wo_setup/meter_add"
-                        options={{
-                            headerShown: false,
-                            title: "Work Order Meter Add Steps",
-                        }}
-                    />
-                    <Stack.Screen
-                        name="wo_setup/meter_setup"
-                        options={{
-                            headerShown: false,
-                        }}
-                    />
                     <Stack.Screen name="index" options={{ headerShown: false }} />
                     <Stack.Screen name="login" options={{ headerShown: false }} />
-                    <Stack.Screen name="register" options={{ headerShown: false }} />
-                    <Stack.Screen name="electrician-setup" options={{ headerShown: false }} />
-                    <Stack.Screen name="electrician-setup/metering_setup" options={{ headerShown: false }} />
-                    <Stack.Screen name="electrician-setup/service_setup" options={{ headerShown: false }} />
                     <Stack.Screen name="(electrician)_setup" options={{ headerShown: false }} />
                     <Stack.Screen name="(electrician)_fa" options={{ headerShown: false }} />
                     <Stack.Screen name="(electrician)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(home)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(inspector)_fa" options={{ headerShown: false }} />
-                    <Stack.Screen name="(inspector)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(contractor)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(contractor)_meter" options={{ headerShown: false }} />
-
-                    <Stack.Screen name="(electricianv2)_setup" options={{ headerShown: false }} />
-                    <Stack.Screen name="(electricianv2)_fa" options={{ headerShown: false }} />
-                    <Stack.Screen name="(electricianv2)" options={{ headerShown: false }} />
                 </Stack>
             </NetworkProvider>
         </SQLiteProvider>

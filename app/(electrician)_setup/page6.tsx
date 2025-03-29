@@ -51,7 +51,7 @@ const MeteringLocationPage: React.FC = () => {
 
     return (
         <>
-            <StackScreen title="Additional Information" nextRoute="/(electricianv2)_setup/preview" nextLabel="Next" onNext={handleNext} />
+            <StackScreen title="Additional Information" nextRoute="/(electrician)_setup/preview" nextLabel="Next" onNext={handleNext} />
             <View className="flex-1 bg-gray-50">
                 <ScrollView className="p-8 space-y-8" contentContainerStyle={{ paddingBottom: 30 }}>
                     {["TraversingWire", "DeceasedLotOwner"].map((field) => (

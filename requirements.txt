@@ -1,0 +1,5 @@
+eas init
+eas login
+eas update:configure
+eas build --profile preview
+eas update --channel preview  --message "[message]" 

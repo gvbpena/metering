@@ -1,6 +1,6 @@
 import "../global.css";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { Stack } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";

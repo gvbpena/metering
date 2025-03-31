@@ -55,6 +55,7 @@ const useSyncMeteringApplication = () => {
                 const sqliteStatus = sqliteMap.get(pgItem.application_id);
                 return sqliteStatus === undefined || sqliteStatus !== pgItem.status;
             });
+            console.log(diff);
             setDifferences(diff);
         }
     };

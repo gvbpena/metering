@@ -9,7 +9,8 @@ export const useSubmitData = () => {
     const generateApplicationId = () => {
         const timestamp = Date.now().toString().slice(-5);
         const randomNum = Math.floor(100 + Math.random() * 900);
-        return `${timestamp}${randomNum}`;
+        const id = String(data[0]?.id ?? "0000").slice(-4);
+        return `APID-${id}${timestamp}${randomNum}`;
     };
 
     const submitApplication = async () => {

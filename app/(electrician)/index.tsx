@@ -32,6 +32,9 @@ const ElectricianPage = () => {
     const scrollY = useRef(new Animated.Value(0)).current;
     const prevScrollY = useRef(0);
     const { data } = useProfile();
+    const isMounted = useRef(true);
+    const isFetchingData = useRef(false);
+
     const fetchQuery = useMemo(
         () => `
             WITH MeteringSyncStatus AS (
@@ -66,7 +69,13 @@ const ElectricianPage = () => {
         `,
         [data]
     );
+
     const fetchData = useCallback(async () => {
+        if (isFetchingData.current) {
+            return;
+        }
+        isFetchingData.current = true;
+
         try {
             const result = await database.getAllAsync<{
                 id: string;
@@ -79,38 +88,100 @@ const ElectricianPage = () => {
                 totalRecords: string | null;
                 syncedRecords: string | null;
             }>(fetchQuery);
-            setOrders(result);
-        } catch (error) {
-            console.error("Error fetching data from SQLite", error);
+
+            if (isMounted.current) {
+                setOrders(result);
+            }
+        } catch (error: any) {
+            if (isMounted.current) {
+                if (error.message?.includes("Access to closed resource")) {
+                    console.warn("Caught 'Access to closed resource' error during fetch, likely due to unmount race condition.", error);
+                } else {
+                    console.error("Error fetching data from SQLite", error);
+                }
+            } else {
+                console.log("Caught error during fetch, but component unmounted/unfocused.", error.message);
+            }
+        } finally {
+            isFetchingData.current = false;
         }
     }, [database, fetchQuery]);
 
     const checkAndSyncOrders = useCallback(async () => {
         const unsyncedOrders = orders.filter((order) => order.sync_status?.toLowerCase() === "unsynced" && order.status?.toLowerCase() === "endorsed");
-
         if (unsyncedOrders.length > 0) {
             await startSync();
         }
     }, [startSync, orders]);
 
     const onRefresh = useCallback(async () => {
+        console.log("onRefresh triggered");
         setRefreshing(true);
+
         try {
+            if (!isMounted.current) {
+                console.log("Component is unmounted, stopping refresh.");
+                setRefreshing(false);
+                return;
+            }
+
+            console.log("Checking and syncing orders...");
             await checkAndSyncOrders();
+
+            if (!isMounted.current) {
+                console.log("Component unmounted after checkAndSyncOrders, stopping refresh.");
+                setRefreshing(false);
+                return;
+            }
+
+            console.log("Starting status sync...");
             await startStatusSync();
+
+            if (!isMounted.current) {
+                console.log("Component unmounted after startStatusSync, stopping refresh.");
+                setRefreshing(false);
+                return;
+            }
+
+            console.log("Fetching statuses...");
             await fetchStatuses();
+
+            if (!isMounted.current) {
+                console.log("Component unmounted after fetchStatuses, stopping refresh.");
+                setRefreshing(false);
+                return;
+            }
+
+            console.log("Fetching main data...");
             await fetchData();
         } catch (error) {
-            console.error("Error during refresh:", error);
+            if (isMounted.current) {
+                console.error("Error during refresh:", error);
+            }
         } finally {
-            setRefreshing(false);
+            if (isMounted.current) {
+                console.log("Refresh completed, setting refreshing to false.");
+                setRefreshing(false);
+            }
         }
-    }, [checkAndSyncOrders, fetchData, fetchStatuses, startStatusSync]); // Added startStatusSync dependency
+    }, [checkAndSyncOrders, fetchData, fetchStatuses, startStatusSync]);
 
     useFocusEffect(
         useCallback(() => {
-            checkAndSyncOrders();
-            fetchData();
+            isMounted.current = true;
+
+            const loadDataOnFocus = async () => {
+                // Consider if checkAndSyncOrders needs awaiting or can run async
+                checkAndSyncOrders();
+                await fetchData();
+            };
+
+            loadDataOnFocus();
+
+            return () => {
+                isMounted.current = false;
+                isFetchingData.current = false; // Reset fetch lock on cleanup
+            };
         }, [fetchData, checkAndSyncOrders])
     );
 
@@ -143,7 +214,6 @@ const ElectricianPage = () => {
     return (
         <View className="flex-1 bg-gray-100 p-4">
             <View className="my-4 flex-row items-center bg-white rounded-lg px-5 py-4 shadow-md border border-gray-300">
-                {/* Changed Component: Use AntDesign instead of Icon */}
                 <AntDesign name="search1" size={28} color="#555" />
                 <TextInput
                     className="flex-1 pl-4 text-xl text-gray-900"

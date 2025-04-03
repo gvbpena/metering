@@ -79,7 +79,7 @@ const SignaturePage = () => {
 
                         <TouchableOpacity
                             onPress={() => signatureRef.current?.readSignature()}
-                            className="bg-blue-500 rounded-md py-3 flex-row justify-center items-center w-1/2 ml-4"
+                            className="bg-[#0066A0] rounded-md py-3 flex-row justify-center items-center w-1/2 ml-4"
                         >
                             <Text className="text-white text-lg font-medium">Confirm</Text>
                         </TouchableOpacity>

@@ -33,15 +33,6 @@ export default function LoginScreen() {
                 case "Electrician":
                     router.replace("/(electrician)" as any);
                     break;
-                // case "Inspector":
-                //     router.replace("/(inspector)");
-                //     break;
-                // case "Contractor":
-                //     router.replace("/(contractor)" as any);
-                //     break;
-                // case "Power Metering Engineer":
-                //     router.replace("/(home)");
-                //     break;
                 default:
                     setError("Unauthorized Role. Contact Support.");
             }
@@ -68,15 +59,6 @@ export default function LoginScreen() {
             console.log("Raw response:", text);
 
             try {
-                // const result = JSON.parse(text);
-                // console.log("Parsed JSON response:", result);
-
-                // if (result.status === "success" && result.data) {
-                //     const { id, name, username, email, crewname, orgname, role } = result.data;
-                //     await authLogin(id, name, username, email, crewname, orgname, role);
-                // } else if (result.error) {
-                //     setError(result.error);
-                // }
                 const result = JSON.parse(text);
                 console.log("Parsed JSON response:", result);
 
@@ -101,7 +83,7 @@ export default function LoginScreen() {
     return (
         <View className="flex-1 justify-center px-5 bg-gray-100">
             <View className="flex justify-center items-center mb-8">
-                <Image source={require("../assets/images/logo_genius.png")} style={{ width: 200, height: undefined, aspectRatio: 1 }} resizeMode="contain" />
+                <Image source={require("../assets/images/genius-image.png")} style={{ width: 200, aspectRatio: 1 }} />
                 <Text className="text-3xl font-extrabold text-center text-gray-700"> Metering</Text>
             </View>
             <View className="mb-3 flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-300">
@@ -128,13 +110,13 @@ export default function LoginScreen() {
                     <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
                 </Pressable>
             </View>
-            {error ? <Text className="text-[#EA4335] mb-4 text-center">{error}</Text> : null}
+            {error ? <Text className="text-[#0066A0] mb-4 text-center">{error}</Text> : null}
             {loading ? (
-                <Pressable className="bg-[#EA4335] rounded-xl py-4 mb-4 flex justify-center items-center" disabled>
+                <Pressable className="bg-[#0066A0] rounded-xl py-4 mb-4 flex justify-center items-center" disabled>
                     <ActivityIndicator size="small" color="#fff" />
                 </Pressable>
             ) : (
-                <Pressable className="bg-[#EA4335] rounded-xl py-4 mb-4 flex justify-center items-center" onPress={handleLogin}>
+                <Pressable className="bg-[#0066A0] rounded-xl py-4 mb-4 flex justify-center items-center" onPress={handleLogin}>
                     <Text className="text-white text-lg font-semibold">Login</Text>
                 </Pressable>
             )}

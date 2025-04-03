@@ -29,7 +29,7 @@ const SetServicePage = () => {
                                 <Text className="ml-2 text-sm font-medium text-gray-800">Metering Location</Text>
                             </View>
                             <View className="flex flex-row items-center">
-                                <Ionicons name="ellipse-sharp" size={15} color="#EA4335" />
+                                <Ionicons name="ellipse-sharp" size={15} color="#0066A0" />
                                 <Text className="ml-2 text-sm font-medium text-gray-800">Pole Location</Text>
                             </View>
                         </View>
@@ -84,7 +84,7 @@ const SetServicePage = () => {
                             anchor={{ x: 0.2, y: 0.2 }}
                             tappable={false}
                         >
-                            <Ionicons name="ellipse-sharp" size={20} color="#EA4335" pointerEvents="none" />
+                            <Ionicons name="ellipse-sharp" size={20} color="#0066A0" pointerEvents="none" />
                         </Marker>
                     )}
                     {formData.latitude && formData.longitude && (

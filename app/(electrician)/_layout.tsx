@@ -15,7 +15,12 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <NetworkProvider>
                 <SyncProvider>
-                    <Tabs>
+                    <Tabs
+                        screenOptions={{
+                            tabBarActiveTintColor: "#0066A0",
+                            tabBarInactiveTintColor: "gray",
+                        }}
+                    >
                         <Tabs.Screen
                             name="index"
                             options={{

@@ -227,7 +227,7 @@ const ElectricianPage = () => {
                                 badgeStyles = "bg-green-500 text-white";
                                 break;
                             case "endorsed":
-                                badgeStyles = "bg-blue-500 text-white";
+                                badgeStyles = "bg-[#0066A0] text-white";
                                 break;
                             case "rejected":
                                 badgeStyles = "bg-red-500 text-white";
@@ -261,9 +261,9 @@ const ElectricianPage = () => {
                 <View className="flex-1">
                     <TouchableOpacity
                         onPress={() => router.push("/(electrician)_setup/page1")}
-                        className="absolute bottom-5 right-5 bg-blue-500 px-5 py-3 rounded-full shadow-lg"
+                        className="absolute bottom-5 right-5 bg-[#0066A0] px-7 py-4 rounded-full shadow-lg"
                     >
-                        <Text className="text-white font-bold">Get Started</Text>
+                        <Text className="text-white font-bold text-lg">Get Started</Text>
                     </TouchableOpacity>
                 </View>
             )}

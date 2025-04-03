@@ -115,44 +115,27 @@ const ElectricianPage = () => {
     }, [startSync, orders]);
 
     const onRefresh = useCallback(async () => {
-        console.log("onRefresh triggered");
         setRefreshing(true);
-
         try {
             if (!isMounted.current) {
-                console.log("Component is unmounted, stopping refresh.");
                 setRefreshing(false);
                 return;
             }
-
-            console.log("Checking and syncing orders...");
             await checkAndSyncOrders();
-
             if (!isMounted.current) {
-                console.log("Component unmounted after checkAndSyncOrders, stopping refresh.");
                 setRefreshing(false);
                 return;
             }
-
-            console.log("Starting status sync...");
             await startStatusSync();
-
             if (!isMounted.current) {
-                console.log("Component unmounted after startStatusSync, stopping refresh.");
                 setRefreshing(false);
                 return;
             }
-
-            console.log("Fetching statuses...");
             await fetchStatuses();
-
             if (!isMounted.current) {
-                console.log("Component unmounted after fetchStatuses, stopping refresh.");
                 setRefreshing(false);
                 return;
             }
-
-            console.log("Fetching main data...");
             await fetchData();
         } catch (error) {
             if (isMounted.current) {
@@ -160,7 +143,6 @@ const ElectricianPage = () => {
             }
         } finally {
             if (isMounted.current) {
-                console.log("Refresh completed, setting refreshing to false.");
                 setRefreshing(false);
             }
         }

@@ -47,7 +47,7 @@ interface MeteringApplication {
     latitude?: string;
     longitude?: string;
     traversingwire?: string;
-    deceasedlotowner?: string;
+    // deceasedlotowner?: string;
     electricalpermitnumber?: string;
     permiteffectivedate?: string;
     landmark?: string;

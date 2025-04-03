@@ -16,7 +16,7 @@ type FormDataType = {
     NearMeterNo?: string;
     pole_longitude?: string;
     TraversingWire?: "Yes" | "No";
-    DeceasedLotOwner?: "Yes" | "No";
+    // DeceasedLotOwner?: "Yes" | "No";
 };
 
 type NodeType = {
@@ -34,7 +34,7 @@ const MeteringLocationPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
 
-    const requiredFields: (keyof FormDataType)[] = ["NearMeterNo", "TraversingWire", "DeceasedLotOwner"];
+    const requiredFields: (keyof FormDataType)[] = ["NearMeterNo", "TraversingWire"];
     const isFormComplete = requiredFields.every((field) => (formData[field] || "").trim() !== "");
 
     const handleInputChange = (field: keyof FormDataType, value: string) => {
@@ -54,7 +54,7 @@ const MeteringLocationPage: React.FC = () => {
             <StackScreen title="Additional Information" nextRoute="/(electrician)_setup/preview" nextLabel="Next" onNext={handleNext} />
             <View className="flex-1 bg-gray-50">
                 <ScrollView className="p-8 space-y-8" contentContainerStyle={{ paddingBottom: 30 }}>
-                    {["TraversingWire", "DeceasedLotOwner"].map((field) => (
+                    {["TraversingWire"].map((field) => (
                         <View key={field} className="my-3">
                             <Text className="text-gray-700 text-lg font-semibold capitalize mb-2">
                                 {field.replace(/([A-Z])/g, " $1").trim()} <Text className="text-red-500">*</Text>
@@ -82,7 +82,7 @@ const MeteringLocationPage: React.FC = () => {
                     ))}
 
                     {requiredFields
-                        .filter((field) => field !== "reference_pole" && field !== "DeceasedLotOwner" && field !== "TraversingWire")
+                        .filter((field) => field !== "reference_pole" && field !== "TraversingWire")
                         .map((field) => (
                             <View key={field} className="my-3">
                                 <Text className="text-gray-700 text-lg font-semibold capitalize mb-2">

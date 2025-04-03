@@ -35,9 +35,9 @@ export const useSubmitData = () => {
                     representativemobile, representativeemail, representativeattachedid,
                     representativespecialpowerofattorney, customeraddress, citymunicipality,
                     barangay, streethouseunitno, sitiopurokbuildingsubdivision, reference_pole,
-                    nearmeterno, pole_latitude, pole_longitude, traversingwire, deceasedlotowner,
+                    nearmeterno, pole_latitude, pole_longitude, traversingwire,
                     electricalpermitnumber, permiteffectivedate, landmark, status, sync_status, electrician_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
                 [
                     application_id, // Use the generated 8-digit ID
                     formData.ClientType ?? null,
@@ -81,7 +81,7 @@ export const useSubmitData = () => {
                     formData.pole_latitude ?? null,
                     formData.pole_longitude ?? null,
                     formData.TraversingWire ?? null,
-                    formData.DeceasedLotOwner ?? null,
+                    // formData.DeceasedLotOwner ?? null,
                     formData.ElectricalPermitNumber ?? null,
                     formData.PermitEffectiveDate ?? null,
                     formData.LandMark ?? null,

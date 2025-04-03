@@ -163,7 +163,7 @@ export const fieldLabels: Record<string, string> = {
     premise_longitude: "Premise Longitude",
 
     traversingwire: "Traversing Wires",
-    deceasedlotowner: "Deceased Lot Owner",
+    // deceasedlotowner: "Deceased Lot Owner",
     electricalpermitnumber: "Electrical Permit Number",
     permiteffectivedate: "Permit Effective Date",
     landmark: "Landmark",

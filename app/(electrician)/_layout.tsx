@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { SyncProvider } from "@/context/_syncContextv2";
 import { NetworkProvider } from "@/context/_internetStatusContext";
-import { View, Text, ActivityIndicator, Linking, Alert } from "react-native";
+import { View, Text, ActivityIndicator, Linking, Alert, Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Constants from "expo-constants";
 import React, { useState, useEffect } from "react";
@@ -160,7 +160,8 @@ const NetworkStatusTitle = () => {
 
     return (
         <View className="flex-row items-center">
-            <Text className="text-lg font-bold text-black ml-4">Metering</Text>
+            <Image source={require("@/assets/images/genius-image.png")} className="w-12 h-12" resizeMode="contain" />
+            <Text className="text-2xl font-extrabold text-black">Metering</Text>
             <Text className="text-sm text-gray-500 ml-2">v{version}</Text>
             {renderStatusAndAction()}
         </View>

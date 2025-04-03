@@ -1,13 +1,8 @@
 import React, { useState, useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from "react-native";
-// import SignatureScreen from "react-native-signature-canvas";
-// import { useRouter } from "expo-router";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import StackScreen from "./_stackscreen";
-import { useLocalSearchParams } from "expo-router";
 export default function ConsentPage() {
     const [agreement, setAgreement] = useState<boolean | null>(null);
-
-    // const { id } = useLocalSearchParams();
     return (
         <>
             <StackScreen title="Consent" nextRoute="consent_signature" nextLabel="Next" onNext={!!agreement} />

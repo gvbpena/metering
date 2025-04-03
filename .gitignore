@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-./saved_code/
+saved_code/
 # Expo
 .expo/
 dist/

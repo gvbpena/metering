@@ -111,7 +111,7 @@ export const RequiredFields = {
     BusinessType: true,
     PersonPropertyType: true,
     TraversingWire: true,
-    DeceasedLotOwner: true,
+    // DeceasedLotOwner: true,
     ElectricalPermitNumber: true,
     PermitEffectiveDate: true,
     Signature: true,

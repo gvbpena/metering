@@ -43,7 +43,7 @@ interface MeteringApplicationRecord {
     pole_latitude?: string;
     pole_longitude?: string;
     traversingwire?: string;
-    deceasedlotowner?: string;
+    // deceasedlotowner?: string;
     electricalpermitnumber?: string;
     permiteffectivedate?: string;
     landmark?: string;

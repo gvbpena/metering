@@ -45,7 +45,7 @@ export interface FormData {
     pole_latitude?: string;
     pole_longitude?: string;
     TraversingWire?: string;
-    DeceasedLotOwner?: string;
+    // DeceasedLotOwner?: string;
     ElectricalPermitNumber?: string;
     PermitEffectiveDate?: string;
     LandMark?: string;
@@ -100,7 +100,7 @@ export const groupedPages = [
     },
     { title: "Client Address", fields: ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo", "SitioPurokBuildingSubdivision"] },
     { title: "Metering Location", fields: ["NearMeterNo"] },
-    { title: "Client Additional Info", fields: ["TraversingWire", "DeceasedLotOwner", "ElectricalPermitNumber", "PermitEffectiveDate", "LandMark"] },
+    { title: "Client Additional Info", fields: ["TraversingWire", "ElectricalPermitNumber", "PermitEffectiveDate", "LandMark"] },
 ];
 
 export { formReducer, initialState };

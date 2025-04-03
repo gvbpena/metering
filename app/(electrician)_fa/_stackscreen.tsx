@@ -17,7 +17,7 @@ export default function Navbar({ title, nextRoute, nextLabel, onNext, handleFunc
     const iconName = nextLabel === "Next" ? "arrow-forward" : "checkmark";
 
     const handleNextPress = async () => {
-        if (loading || !onNext) return; // Prevent action if loading or onNext is false
+        if (loading || !onNext) return;
         setLoading(true);
 
         try {

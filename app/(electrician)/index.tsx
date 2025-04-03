@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, FlatList, RefreshControl, TouchableOpacity, Animated } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { AntDesign } from "@expo/vector-icons";
@@ -35,59 +35,46 @@ const ElectricianPage = () => {
     const isMounted = useRef(true);
     const isFetchingData = useRef(false);
 
-    const fetchQuery = useMemo(
-        () => `
-            WITH MeteringSyncStatus AS (
-                SELECT
-                    ma.id,
-                    ma.application_id,
-                    ma.status,
-                    CASE
-                        WHEN (
-                            (SELECT COUNT(*) FROM images i WHERE i.reference_id = ma.application_id AND i.status = 'Synced') +
-                            CASE WHEN ma.sync_status = 'Synced' THEN 1 ELSE 0 END
-                        ) =
-                        ((SELECT COUNT(*) FROM images i WHERE i.reference_id = ma.application_id) + 1)
-                        THEN 'Synced'
-                        ELSE 'Unsynced'
-                    END AS sync_status,
-                    ma.clienttype,
-                    ma.electricalpermitnumber,
-                    ma.lastname || ', ' || ma.firstname AS customer_name
-                FROM metering_application ma
-                WHERE ma.electrician_id = '${data?.[0]?.id ?? ""}'
-            )
+    const fetchQuery = `
+        WITH MeteringSyncStatus AS (
             SELECT
-                mss.*,
-                (SELECT COUNT(*) FROM images i WHERE i.reference_id = mss.application_id) + 1 AS totalRecords,
-                (
-                    (SELECT COUNT(*) FROM images i WHERE i.reference_id = mss.application_id AND i.status = 'Synced')
-                    + CASE WHEN mss.sync_status = 'Synced' THEN 1 ELSE 0 END
-                ) AS syncedRecords
-            FROM MeteringSyncStatus mss
-            ORDER BY mss.id DESC;
-        `,
-        [data]
-    );
+                ma.id,
+                ma.application_id,
+                ma.status,
+                CASE
+                    WHEN (
+                        (SELECT COUNT(*) FROM images i WHERE i.reference_id = ma.application_id AND i.status = 'Synced') +
+                        CASE WHEN ma.sync_status = 'Synced' THEN 1 ELSE 0 END
+                    ) =
+                    ((SELECT COUNT(*) FROM images i WHERE i.reference_id = ma.application_id) + 1)
+                    THEN 'Synced'
+                    ELSE 'Unsynced'
+                END AS sync_status,
+                ma.clienttype,
+                ma.electricalpermitnumber,
+                ma.lastname || ', ' || ma.firstname AS customer_name
+            FROM metering_application ma
+            WHERE ma.electrician_id = '${data?.[0]?.id ?? ""}'
+        )
+        SELECT
+            mss.*,
+            (SELECT COUNT(*) FROM images i WHERE i.reference_id = mss.application_id) + 1 AS totalRecords,
+            (
+                (SELECT COUNT(*) FROM images i WHERE i.reference_id = mss.application_id AND i.status = 'Synced')
+                + CASE WHEN mss.sync_status = 'Synced' THEN 1 ELSE 0 END
+            ) AS syncedRecords
+        FROM MeteringSyncStatus mss
+        ORDER BY mss.id DESC;
+    `;
 
-    const fetchData = useCallback(async () => {
+    const fetchData = async () => {
         if (isFetchingData.current) {
             return;
         }
         isFetchingData.current = true;
 
         try {
-            const result = await database.getAllAsync<{
-                id: string;
-                status: string | null;
-                sync_status: string | null;
-                application_id: string | null;
-                clienttype: string | null;
-                electricalpermitnumber: string | null;
-                customer_name: string | null;
-                totalRecords: string | null;
-                syncedRecords: string | null;
-            }>(fetchQuery);
+            const result = await database.getAllAsync<Order>(fetchQuery);
 
             if (isMounted.current) {
                 setOrders(result);
@@ -105,16 +92,16 @@ const ElectricianPage = () => {
         } finally {
             isFetchingData.current = false;
         }
-    }, [database, fetchQuery]);
+    };
 
-    const checkAndSyncOrders = useCallback(async () => {
+    const checkAndSyncOrders = async () => {
         const unsyncedOrders = orders.filter((order) => order.sync_status?.toLowerCase() === "unsynced" && order.status?.toLowerCase() === "endorsed");
         if (unsyncedOrders.length > 0) {
             await startSync();
         }
-    }, [startSync, orders]);
+    };
 
-    const onRefresh = useCallback(async () => {
+    const onRefresh = async () => {
         setRefreshing(true);
         try {
             if (!isMounted.current) {
@@ -146,14 +133,12 @@ const ElectricianPage = () => {
                 setRefreshing(false);
             }
         }
-    }, [checkAndSyncOrders, fetchData, fetchStatuses, startStatusSync]);
-
+    };
     useFocusEffect(
-        useCallback(() => {
+        React.useCallback(() => {
             isMounted.current = true;
 
             const loadDataOnFocus = async () => {
-                // Consider if checkAndSyncOrders needs awaiting or can run async
                 checkAndSyncOrders();
                 await fetchData();
             };
@@ -162,23 +147,21 @@ const ElectricianPage = () => {
 
             return () => {
                 isMounted.current = false;
-                isFetchingData.current = false; // Reset fetch lock on cleanup
+                isFetchingData.current = false;
             };
-        }, [fetchData, checkAndSyncOrders])
+        }, [fetchData, checkAndSyncOrders]) // Dependencies now include the non-memoized functions
     );
 
-    const filteredOrders = useMemo(() => {
-        const lowerSearchQuery = searchQuery.toLowerCase();
-        return orders.filter(
-            (order) =>
-                (order.application_id?.toLowerCase() || "").includes(lowerSearchQuery) ||
-                (order.sync_status?.toLowerCase() || "").includes(lowerSearchQuery) ||
-                (order.status?.toLowerCase() || "").includes(lowerSearchQuery) ||
-                (order.clienttype?.toLowerCase() || "").includes(lowerSearchQuery) ||
-                (order.electricalpermitnumber?.toLowerCase() || "").includes(lowerSearchQuery) ||
-                (order.customer_name?.toLowerCase() || "").includes(lowerSearchQuery)
-        );
-    }, [orders, searchQuery]);
+    const lowerSearchQuery = searchQuery.toLowerCase();
+    const filteredOrders = orders.filter(
+        (order) =>
+            (order.application_id?.toLowerCase() || "").includes(lowerSearchQuery) ||
+            (order.sync_status?.toLowerCase() || "").includes(lowerSearchQuery) ||
+            (order.status?.toLowerCase() || "").includes(lowerSearchQuery) ||
+            (order.clienttype?.toLowerCase() || "").includes(lowerSearchQuery) ||
+            (order.electricalpermitnumber?.toLowerCase() || "").includes(lowerSearchQuery) ||
+            (order.customer_name?.toLowerCase() || "").includes(lowerSearchQuery)
+    );
 
     useEffect(() => {
         const scrollListener = scrollY.addListener(({ value }) => {

@@ -82,10 +82,11 @@ export default function LoginScreen() {
 
     return (
         <View className="flex-1 justify-center px-5 bg-gray-100">
-            <View className="flex justify-center items-center mb-8">
-                <Image source={require("../assets/images/genius-image.png")} style={{ width: 200, aspectRatio: 1 }} />
-                <Text className="text-3xl font-extrabold text-center text-gray-700"> Metering</Text>
+            <View className="flex justify-center items-center mb-6">
+                <Image source={require("../assets/images/genius-image(smallerversion).png")} style={{ width: 80, aspectRatio: 1 }} />
+                <Text className="text-xl font-bold text-center text-gray-700">Metering</Text>
             </View>
+
             <View className="mb-3 flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-300">
                 <Icon name="account" size={24} color="gray" className="mr-4" />
                 <TextInput

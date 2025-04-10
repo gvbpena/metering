@@ -6,6 +6,7 @@ import StackScreen from "./_stackscreen";
 const ClientAddressPage = () => {
     const { formData, dispatch } = useFormData();
     const [showError, setShowError] = useState(false);
+
     const allFields: (keyof typeof formData)[] = [
         "CustomerAddress",
         "CityMunicipality",
@@ -13,8 +14,17 @@ const ClientAddressPage = () => {
         "StreetHouseUnitNo",
         "SitioPurokBuildingSubdivision",
         "LandMark",
+        "postal_code", // 👈 added postal code here
     ];
-    const requiredFields: (keyof typeof formData)[] = ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo"];
+
+    const requiredFields: (keyof typeof formData)[] = [
+        "CustomerAddress",
+        "CityMunicipality",
+        "Barangay",
+        "StreetHouseUnitNo",
+        "postal_code", // 👈 added postal code as required
+    ];
+
     const isFormComplete = requiredFields.every((field) => (formData[field] || "").trim() !== "");
 
     const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -49,6 +59,7 @@ const ClientAddressPage = () => {
                                 onChangeText={(text) => handleInputChange(field, text)}
                                 placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").trim()}`}
                                 placeholderTextColor="#9CA3AF"
+                                keyboardType={field === "postal_code" ? "numeric" : "default"} // 👈 use numeric keyboard for postal_code
                             />
                         </View>
                     ))}

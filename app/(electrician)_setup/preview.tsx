@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useFormData, groupedPages } from "./_context";
-import { SafeAreaView } from "react-native-safe-area-context";
 import StackScreen from "./_stackscreen";
 
 const PreviewPage = () => {

@@ -1,12 +1,15 @@
+// C:/Users/GPena/Desktop/expo-testing/metering/app/(electrician)_setup/_context.tsx
 import React, { createContext, useReducer, useContext, ReactNode, useMemo } from "react";
 
 export interface FormData {
     application_id?: string;
-    ClientType?: string;
-    ApplicationType?: string;
-    ClassType?: string;
-    CustomerType?: string;
-    BusinessType?: string;
+    ClientType?: string | null;
+    ApplicationType?: string | null;
+    ClassType?: string | null;
+    CustomerType?: string | null;
+    BusinessType?: string | null;
+    GovernmentCategory?: string | null;
+    GovernmentSubType?: string | null;
     FirstName?: string;
     MiddleName?: string;
     LastName?: string;
@@ -45,21 +48,73 @@ export interface FormData {
     pole_latitude?: string;
     pole_longitude?: string;
     TraversingWire?: string;
-    // DeceasedLotOwner?: string;
     ElectricalPermitNumber?: string;
     PermitEffectiveDate?: string;
     LandMark?: string;
+    postal_code?: string | null; // Added | null for consistency
 }
-type Action = { type: "SET_INPUT_FIELD"; field: keyof FormData; payload: string } | { type: "SET_FORM_DATA"; payload: FormData };
 
-const initialState: FormData = {};
+type Action = { type: "SET_INPUT_FIELD"; field: keyof FormData; payload: string | null } | { type: "SET_FORM_DATA"; payload: FormData };
+
+const initialState: FormData = {
+    application_id: undefined,
+    ClientType: null,
+    ApplicationType: null,
+    ClassType: null,
+    CustomerType: null,
+    BusinessType: null,
+    GovernmentCategory: null,
+    GovernmentSubType: null,
+    FirstName: undefined,
+    MiddleName: undefined,
+    LastName: undefined, // Added missing initializations for completeness
+    Suffix: undefined,
+    Birthdate: undefined,
+    MaritalStatus: undefined,
+    MobileNo: undefined,
+    LandlineNo: undefined,
+    Email: undefined,
+    TIN: undefined,
+    TypeOfID: undefined,
+    IdNo: undefined,
+    FatherFirstName: undefined,
+    FatherMiddleName: undefined,
+    FatherLastName: undefined,
+    MotherFirstName: undefined,
+    MotherMiddleName: undefined,
+    MotherLastName: undefined,
+    RepresentativeFirstName: undefined,
+    RepresentativeMiddleName: undefined,
+    RepresentativeLastName: undefined,
+    RepresentativeRelationship: undefined,
+    RepresentativeMobile: undefined,
+    RepresentativeEmail: undefined,
+    RepresentativeAttachedID: undefined,
+    RepresentativeSpecialPowerOfAttorney: undefined,
+    CustomerAddress: undefined,
+    CityMunicipality: undefined,
+    Barangay: undefined,
+    StreetHouseUnitNo: undefined,
+    SitioPurokBuildingSubdivision: undefined,
+    reference_pole: undefined,
+    NearMeterNo: undefined,
+    latitude: undefined,
+    longitude: undefined,
+    pole_latitude: undefined,
+    pole_longitude: undefined,
+    TraversingWire: undefined,
+    ElectricalPermitNumber: undefined,
+    PermitEffectiveDate: undefined,
+    LandMark: undefined,
+    postal_code: null, // Initialized postal_code
+};
 
 const formReducer = (state: FormData, action: Action): FormData => {
     switch (action.type) {
         case "SET_INPUT_FIELD":
             return { ...state, [action.field]: action.payload };
         case "SET_FORM_DATA":
-            return { ...state, ...action.payload }; // Merge new form data
+            return { ...state, ...action.payload };
         default:
             return state;
     }
@@ -75,11 +130,15 @@ export const useFormData = () => {
 
 export const FormProvider = ({ children }: { children: ReactNode }) => {
     const [formData, dispatch] = useReducer(formReducer, initialState);
-    return <FormContext.Provider value={{ formData: useMemo(() => formData, [formData]), dispatch }}>{children}</FormContext.Provider>;
+    const value = useMemo(() => ({ formData, dispatch }), [formData]);
+    return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
 };
 
 export const groupedPages = [
-    { title: "Client Information", fields: ["ClientType", "ApplicationType", "ClassType", "CustomerType", "BusinessType"] },
+    {
+        title: "Client Information",
+        fields: ["ClientType", "ApplicationType", "ClassType", "CustomerType", "BusinessType", "GovernmentCategory", "GovernmentSubType"],
+    },
     {
         title: "Client Details",
         fields: ["FirstName", "MiddleName", "LastName", "Suffix", "Birthdate", "MaritalStatus", "MobileNo", "LandlineNo", "Email", "TIN", "TypeOfID", "IdNo"],
@@ -98,9 +157,12 @@ export const groupedPages = [
             "RepresentativeSpecialPowerOfAttorney",
         ],
     },
-    { title: "Client Address", fields: ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo", "SitioPurokBuildingSubdivision"] },
-    { title: "Metering Location", fields: ["NearMeterNo"] },
-    { title: "Client Additional Info", fields: ["TraversingWire", "ElectricalPermitNumber", "PermitEffectiveDate", "LandMark"] },
+    {
+        title: "Client Address",
+        fields: ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo", "SitioPurokBuildingSubdivision", "postal_code"],
+    }, // Added postal_code
+    { title: "Metering Location", fields: ["NearMeterNo", "LandMark", "latitude", "longitude", "pole_latitude", "pole_longitude", "reference_pole"] },
+    { title: "Client Additional Info", fields: ["TraversingWire", "ElectricalPermitNumber", "PermitEffectiveDate"] },
 ];
 
-export { formReducer, initialState };
+// Removed unnecessary export of formReducer and initialState

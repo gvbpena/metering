@@ -6,11 +6,12 @@ export const useSubmitData = () => {
     const db = useSQLiteContext();
     const { formData } = useFormData();
     const { data } = useProfile();
+
     const generateApplicationId = () => {
         const timestamp = Date.now().toString().slice(-5);
         const randomNum = Math.floor(100 + Math.random() * 900);
-        const id = String(data[0]?.id ?? "0000").slice(-4);
-        return `APID-${id}${timestamp}${randomNum}`;
+        const electricianSuffix = String(data?.[0]?.id ?? "0000").slice(-4);
+        return `APID-${electricianSuffix}${timestamp}${randomNum}`;
     };
 
     const submitApplication = async () => {
@@ -18,33 +19,38 @@ export const useSubmitData = () => {
             console.error("Form data is missing");
             return false;
         }
+
         const application_id = formData.application_id ?? generateApplicationId();
 
-        console.log("Generated application_id:", application_id);
+        console.log("Submitting data with application_id:", application_id);
 
         await db.execAsync("BEGIN TRANSACTION");
         try {
             await db.runAsync(
                 `INSERT INTO metering_application (
                     application_id, clienttype, applicationtype, classtype,
-                    customertype, businesstype, firstname, middlename, lastname,
+                    customertype, businesstype,
+                    government_category, government_sub_type,
+                    firstname, middlename, lastname,
                     suffix, birthdate, maritalstatus, mobileno, landlineno, email,
                     tin, typeofid, idno, fatherfirstname, fathermiddlename, fatherlastname,
                     motherfirstname, mothermiddlename, motherlastname, representativefirstname,
                     representativemiddlename, representativelastname, representativerelationship,
                     representativemobile, representativeemail, representativeattachedid,
                     representativespecialpowerofattorney, customeraddress, citymunicipality,
-                    barangay, streethouseunitno, sitiopurokbuildingsubdivision, reference_pole,
-                    nearmeterno, pole_latitude, pole_longitude, traversingwire,
+                    barangay, streethouseunitno, sitiopurokbuildingsubdivision, postal_code,
+                    reference_pole, nearmeterno, pole_latitude, pole_longitude, traversingwire,
                     electricalpermitnumber, permiteffectivedate, landmark, status, sync_status, electrician_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`, // 52 placeholders
                 [
-                    application_id, // Use the generated 8-digit ID
+                    application_id,
                     formData.ClientType ?? null,
                     formData.ApplicationType ?? null,
                     formData.ClassType ?? null,
                     formData.CustomerType ?? null,
                     formData.BusinessType ?? null,
+                    formData.GovernmentCategory ?? null,
+                    formData.GovernmentSubType ?? null,
                     formData.FirstName ?? null,
                     formData.MiddleName ?? null,
                     formData.LastName ?? null,
@@ -76,26 +82,26 @@ export const useSubmitData = () => {
                     formData.Barangay ?? null,
                     formData.StreetHouseUnitNo ?? null,
                     formData.SitioPurokBuildingSubdivision ?? null,
+                    formData.postal_code ?? null, // Added postal_code
                     formData.reference_pole ?? null,
                     formData.NearMeterNo ?? null,
                     formData.pole_latitude ?? null,
                     formData.pole_longitude ?? null,
                     formData.TraversingWire ?? null,
-                    // formData.DeceasedLotOwner ?? null,
                     formData.ElectricalPermitNumber ?? null,
                     formData.PermitEffectiveDate ?? null,
                     formData.LandMark ?? null,
                     "Pending",
                     "Unsynced",
-                    data[0]?.id,
+                    data?.[0]?.id ?? null,
                 ]
             );
             await db.execAsync("COMMIT");
-            console.log("Insert successful!");
+            console.log("Insert successful! Application ID:", application_id);
             return true;
         } catch (error) {
             await db.execAsync("ROLLBACK");
-            console.error("Error inserting data:", error);
+            console.error("Error inserting data into metering_application:", error);
             return false;
         }
     };

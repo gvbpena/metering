@@ -83,7 +83,14 @@ const Page2 = () => {
 
     return (
         <View className="flex-1 bg-gray-50">
-            <StackScreen title="Client Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={saveData} />
+            {/* <StackScreen title="Client Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={() => saveData} /> */}
+
+            <StackScreen
+                title="Customer Details"
+                nextRoute="/(electrician)_setup/page4"
+                nextLabel="Next"
+                onNext={() => true} // Pass a function returning true
+            />
             <ScrollView className="p-8 space-y-8" contentContainerStyle={{ paddingBottom: 60 }}>
                 {["FirstName", "MiddleName", "LastName", "Suffix"].map((field) => (
                     <View key={field} className="my-3">

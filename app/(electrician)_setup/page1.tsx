@@ -82,8 +82,6 @@ const ClientInformation = () => {
 
             <ScrollView className="flex-1 p-2  pb-14 bg-gray-50">
                 <Text className="text-lg font-semibold text-gray-800 mb-3">Client Information</Text>
-
-                {/* Client Type Selection */}
                 <Text className="text-gray-700 mb-2 text-lg font-medium">Client Type</Text>
                 <View className="flex flex-wrap flex-row justify-between">
                     {clientTypes.map((type) => (

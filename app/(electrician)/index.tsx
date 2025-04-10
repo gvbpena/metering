@@ -243,7 +243,7 @@ const ElectricianPage = () => {
             {showButton && (
                 <View className="flex-1">
                     <TouchableOpacity
-                        onPress={() => router.push("/(electrician)_setup/page1")}
+                        onPress={() => router.push("/(electrician)_setup/consent")}
                         className="absolute bottom-5 right-5 bg-[#0066A0] px-7 py-4 rounded-full shadow-lg"
                     >
                         <Text className="text-white font-bold text-lg">Get Started</Text>

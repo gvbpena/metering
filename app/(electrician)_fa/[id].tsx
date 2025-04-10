@@ -44,8 +44,8 @@ interface ImageData {
     [key: string]: string[];
 }
 const captureButtons = [
-    { label: "Meter", icon: "speedometer" },
-    { label: "Pole_Images", icon: "transmission-tower" },
+    { label: "Meterbase", icon: "speedometer" },
+    { label: "Pole Images", icon: "transmission-tower" },
     { label: "Permit", icon: "document-text" },
     { label: "Proof of Ownership", icon: "file-tray-full" },
     { label: "Identity Card", icon: "id-card" },
@@ -59,9 +59,9 @@ interface LocationCoords {
 }
 
 interface LoadingState {
-    Meter: boolean;
+    Meterbase: boolean;
     Premises: boolean;
-    Pole_Images: boolean;
+    "Pole Images": boolean; // Use quotes for key with space
 }
 
 const groupedPages = [
@@ -163,7 +163,6 @@ export const fieldLabels: Record<string, string> = {
     premise_longitude: "Premise Longitude",
 
     traversingwire: "Traversing Wires",
-    // deceasedlotowner: "Deceased Lot Owner",
     electricalpermitnumber: "Electrical Permit Number",
     permiteffectivedate: "Permit Effective Date",
     landmark: "Landmark",
@@ -191,9 +190,9 @@ const DetailsScreen = () => {
     const [premiseLocation, setPremiseLocation] = useState<LocationCoords | null>(null);
     const [poleLocation, setPoleLocation] = useState<LocationCoords | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const [locationLoading, setLocationLoading] = useState<LoadingState>({ Meter: false, Premises: false, Pole_Images: false });
+    const [locationLoading, setLocationLoading] = useState<LoadingState>({ Meterbase: false, Premises: false, "Pole Images": false });
 
-    const getLocation = async (type: "Meter" | "Premises" | "Pole_Images") => {
+    const getLocation = async (type: "Meterbase" | "Premises" | "Pole Images") => {
         setLocationLoading((prev) => ({ ...prev, [type]: true }));
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -207,11 +206,11 @@ const DetailsScreen = () => {
             longitude: currentLocation.coords.longitude,
         };
 
-        if (type === "Meter") {
+        if (type === "Meterbase") {
             setMeterLocation(newLocation);
         } else if (type === "Premises") {
             setPremiseLocation(newLocation);
-        } else if (type === "Pole_Images") {
+        } else if (type === "Pole Images") {
             setPoleLocation(newLocation);
         }
         setLocationLoading((prev) => ({ ...prev, [type]: false }));
@@ -221,21 +220,21 @@ const DetailsScreen = () => {
         if (!id) return;
 
         const query = `
-                SELECT 
-                    ma.*, 
-                    i.image_type, 
-                    GROUP_CONCAT(i.image_url) AS image_urls
-                FROM 
-                    metering_application ma
-                LEFT JOIN 
-                    images i 
-                ON 
-                    ma.application_id = i.reference_id
-                WHERE 
-                    ma.application_id = ?
-                GROUP BY 
-                    i.image_type;
-            `;
+                    SELECT
+                        ma.*,
+                        i.image_type,
+                        GROUP_CONCAT(i.image_url) AS image_urls
+                    FROM
+                        metering_application ma
+                    LEFT JOIN
+                        images i
+                    ON
+                        ma.application_id = i.reference_id
+                    WHERE
+                        ma.application_id = ?
+                    GROUP BY
+                        i.image_type;
+                `;
 
         try {
             const result = await database.getAllAsync(query, [id]);
@@ -286,10 +285,6 @@ const DetailsScreen = () => {
     }, [imagesByType]);
 
     useEffect(() => {
-        // const checkConditions = async () => {
-        //     // const savedSignature = await AsyncStorage.getItem("userSignature");
-        // };
-        // checkConditions();
         fetchData();
         if (id) {
             dispatch({ type: "SET_ACTIVITY_ID", payload: id });
@@ -307,7 +302,7 @@ const DetailsScreen = () => {
             { text: "Cancel", style: "cancel" },
             { text: "Take Photo", onPress: () => launchCamera(category) },
         ];
-        if (!["Meter", "Premises", "Pole_Images"].includes(category)) {
+        if (!["Meterbase", "Premises", "Pole Images"].includes(category)) {
             options.push({ text: "Choose from Gallery", onPress: () => launchImageLibrary(category) });
         }
 
@@ -326,11 +321,11 @@ const DetailsScreen = () => {
             if (category === "Premises") {
                 getLocation("Premises");
             }
-            if (category === "Meter") {
-                getLocation("Meter");
+            if (category === "Meterbase") {
+                getLocation("Meterbase");
             }
-            if (category === "Pole_Images") {
-                getLocation("Pole_Images");
+            if (category === "Pole Images") {
+                getLocation("Pole Images");
             }
             setSelectedImages((prev) => ({ ...prev, [category]: [...(prev[category] || []), result.assets[0].uri] }));
         }
@@ -468,7 +463,7 @@ const DetailsScreen = () => {
             title: selectedGroup.title,
             application_id: applicationId,
             fields: selectedGroup.fields.reduce((acc, field) => {
-                acc[field] = String(selectedRow[field as keyof MeteringApplication] ?? "N/A"); // Map field names to their values
+                acc[field] = String(selectedRow[field as keyof MeteringApplication] ?? "N/A");
                 return acc;
             }, {} as Record<string, string>),
         };
@@ -662,12 +657,8 @@ const DetailsScreen = () => {
                                         onPress={() => pickImageOrTakePhoto(item.label)}
                                         className="w-1/2 h-10 flex-row items-center justify-center bg-white border border-gray-300 rounded-lg shadow-sm"
                                     >
-                                        {item.label === "Pole_Images" ? (
-                                            <MaterialCommunityIcons name={item.icon as any} size={18} color="gray" className="mr-1" />
-                                        ) : (
-                                            <Ionicons name={item.icon as any} size={24} color="gray" className="mr-2" />
-                                        )}
-                                        <Text className="text-lg text-gray-700 font-medium">{item.label}</Text>
+                                        <Ionicons name="camera" size={20} color="gray" className="mr-2" />
+                                        <Text className="text-lg text-gray-700 font-medium">Capture</Text>
                                     </TouchableOpacity>
                                 </View>
                                 {item.label === "Premises" && (
@@ -687,15 +678,15 @@ const DetailsScreen = () => {
                                     </View>
                                 )}
 
-                                {item.label === "Meter" && (
+                                {item.label === "Meterbase" && (
                                     <View className="flex flex-row items-center">
-                                        {locationLoading.Meter && (
+                                        {locationLoading.Meterbase && (
                                             <View className="flex flex-row items-center">
                                                 <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
                                                 <Text className="text-sm text-gray-600">Fetching Location...</Text>
                                             </View>
                                         )}
-                                        {!locationLoading.Meter && meterLocation && (
+                                        {!locationLoading.Meterbase && meterLocation && (
                                             <Text className="text-sm text-gray-600 mb-2">
                                                 Lat: {meterLocation.latitude}, Long: {meterLocation.longitude}
                                             </Text>
@@ -703,20 +694,21 @@ const DetailsScreen = () => {
                                     </View>
                                 )}
 
-                                {item.label === "Pole_Images" && (
+                                {item.label === "Pole Images" && (
                                     <View className="flex flex-row items-center">
-                                        {locationLoading.Pole_Images && (
+                                        {locationLoading["Pole Images"] && ( // Use bracket notation
                                             <View className="flex flex-row items-center">
                                                 <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
                                                 <Text className="text-sm text-gray-600">Fetching Location...</Text>
                                             </View>
                                         )}
 
-                                        {!locationLoading.Pole_Images && poleLocation && (
-                                            <Text className="text-sm text-gray-600 mb-2">
-                                                Lat: {poleLocation.latitude}, Long: {poleLocation.longitude}
-                                            </Text>
-                                        )}
+                                        {!locationLoading["Pole Images"] &&
+                                            poleLocation && ( // Use bracket notation
+                                                <Text className="text-sm text-gray-600 mb-2">
+                                                    Lat: {poleLocation.latitude}, Long: {poleLocation.longitude}
+                                                </Text>
+                                            )}
                                     </View>
                                 )}
 
@@ -734,13 +726,13 @@ const DetailsScreen = () => {
                                                                     ...prev,
                                                                     [item.label]: prev[item.label].filter((_, i) => i !== index),
                                                                 }));
-                                                                if (item.label === "Meter") {
+                                                                if (item.label === "Meterbase") {
                                                                     setMeterLocation(null);
                                                                 }
                                                                 if (item.label === "Premises") {
                                                                     setPremiseLocation(null);
                                                                 }
-                                                                if (item.label === "Pole_Images") {
+                                                                if (item.label === "Pole Images") {
                                                                     setPoleLocation(null);
                                                                 }
                                                             }}

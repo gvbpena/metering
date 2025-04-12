@@ -27,6 +27,7 @@ export interface FormData {
     MotherFirstName?: string;
     MotherMiddleName?: string;
     MotherLastName?: string;
+    has_representative?: string | null; // Changed from boolean to string | null
     RepresentativeFirstName?: string;
     RepresentativeMiddleName?: string;
     RepresentativeLastName?: string;
@@ -54,7 +55,9 @@ export interface FormData {
     SignatureURL?: string;
 }
 
-type Action = { type: "SET_INPUT_FIELD"; field: keyof FormData; payload: string | null } | { type: "SET_FORM_DATA"; payload: FormData };
+type Action =
+    | { type: "SET_INPUT_FIELD"; field: keyof FormData; payload: string | boolean | null } // Payload can be string for has_representative ("Yes"/"No")
+    | { type: "SET_FORM_DATA"; payload: FormData };
 
 const initialState: FormData = {
     application_id: undefined,
@@ -83,6 +86,7 @@ const initialState: FormData = {
     MotherFirstName: undefined,
     MotherMiddleName: undefined,
     MotherLastName: undefined,
+    has_representative: "No", // Changed default to "No"
     RepresentativeFirstName: undefined,
     RepresentativeMiddleName: undefined,
     RepresentativeLastName: undefined,
@@ -107,11 +111,17 @@ const initialState: FormData = {
     PermitEffectiveDate: undefined,
     LandMark: undefined,
     postal_code: null,
+    SignatureURL: undefined,
 };
 
 const formReducer = (state: FormData, action: Action): FormData => {
     switch (action.type) {
         case "SET_INPUT_FIELD":
+            // Ensure boolean values aren't accidentally saved for has_representative if old code calls it
+            if (action.field === "has_representative" && typeof action.payload === "boolean") {
+                console.warn("Attempted to set boolean for has_representative. Converting to 'Yes'/'No'.");
+                return { ...state, [action.field]: action.payload ? "Yes" : "No" };
+            }
             return { ...state, [action.field]: action.payload };
         case "SET_FORM_DATA":
             return { ...state, ...action.payload };
@@ -134,6 +144,7 @@ export const FormProvider = ({ children }: { children: ReactNode }) => {
     return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
 };
 
+// groupedPages remains the same, it just lists fields, not their types or values
 export const groupedPages = [
     {
         title: "Client Information",
@@ -158,6 +169,7 @@ export const groupedPages = [
             "RepresentativeEmail",
             "RepresentativeAttachedID",
             "RepresentativeSpecialPowerOfAttorney",
+            // Note: 'has_representative' is controlled by the toggle, not listed as a typical field here.
         ],
     },
     {

@@ -68,21 +68,12 @@ interface MeteringApplication {
     representativespecialpowerofattorney?: string;
     streethouseunitno?: string;
     sitiopurokbuildingsubdivision?: string;
+    has_representative?: string;
 }
 
 interface ImageData {
     [key: string]: string[];
 }
-const captureButtons = [
-    { label: "Meterbase", icon: "speedometer" },
-    { label: "Pole Images", icon: "transmission-tower" },
-    { label: "Permit", icon: "document-text" },
-    { label: "Proof of Ownership", icon: "file-tray-full" },
-    { label: "Identity Card", icon: "id-card" },
-    { label: "Premises", icon: "home" },
-    { label: "Signature", icon: "pencil" },
-    { label: "Attach Document", icon: "attach" },
-];
 
 interface LocationCoords {
     latitude: number;
@@ -112,6 +103,7 @@ const groupedPages = [
     {
         title: "Representative Information",
         fields: [
+            "has_representative",
             "representativefirstname",
             "representativemiddlename",
             "representativelastname",
@@ -197,6 +189,7 @@ export const fieldLabels: Record<string, string> = {
     electricalpermitnumber: "Electrical Permit Number",
     permiteffectivedate: "Permit Effective Date",
     landmark: "Landmark",
+    has_representative: "Has Representative",
 };
 
 const DetailsScreen = () => {
@@ -317,7 +310,27 @@ const DetailsScreen = () => {
             fetchData();
         }, [fetchData])
     );
+    const captureButtons = useMemo(() => {
+        const baseButtons = [
+            { label: "Meterbase" },
+            { label: "Pole Images" },
+            { label: "Permit" },
+            { label: "Proof of Ownership" },
+            { label: "Identity Card" },
+            { label: "Premises" },
+            { label: "Signature" },
+            { label: "Attach Document" },
+            // SPA is added conditionally below
+        ];
 
+        // Check if selectedRow has data and if has_representative is 'Yes'
+        // Using optional chaining (?.) and toLowerCase() for robustness
+        if (selectedRow?.has_representative?.toLowerCase() === "yes") {
+            baseButtons.push({ label: "SPA" });
+        }
+
+        return baseButtons;
+    }, [selectedRow]); // Recalculate only when selectedRow changes
     useEffect(() => {
         const checkHasSelected = () => {
             const hasAnySelected = Object.values(selectedImages).some((uris) => uris.length > 0);

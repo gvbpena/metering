@@ -24,9 +24,7 @@ export const useSubmitData = () => {
         const application_id = formData.application_id ?? generateApplicationId();
         const signatureUrl = formData.SignatureURL ?? null;
 
-        console.log("Submitting data with application_id:", application_id);
-
-        await db.execAsync("BEGIN TRANSACTION");
+        await db.execAsync("BEGIN TRANSACTION;");
         try {
             await db.runAsync(
                 `INSERT INTO metering_application (
@@ -36,14 +34,17 @@ export const useSubmitData = () => {
                     firstname, middlename, lastname,
                     suffix, birthdate, maritalstatus, mobileno, landlineno, email,
                     tin, typeofid, idno, fatherfirstname, fathermiddlename, fatherlastname,
-                    motherfirstname, mothermiddlename, motherlastname, representativefirstname,
-                    representativemiddlename, representativelastname, representativerelationship,
-                    representativemobile, representativeemail, representativeattachedid,
-                    representativespecialpowerofattorney, customeraddress, citymunicipality,
-                    barangay, streethouseunitno, sitiopurokbuildingsubdivision, postal_code,
-                    reference_pole, nearmeterno, pole_latitude, pole_longitude, traversingwire,
-                    electricalpermitnumber, permiteffectivedate, landmark, status, sync_status, electrician_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+                    motherfirstname, mothermiddlename, motherlastname,
+                    has_representative,
+                    representativefirstname, representativemiddlename, representativelastname,
+                    representativerelationship, representativemobile, representativeemail,
+                    representativeattachedid, representativespecialpowerofattorney,
+                    customeraddress, citymunicipality, barangay, streethouseunitno,
+                    sitiopurokbuildingsubdivision, postal_code, reference_pole,
+                    nearmeterno, pole_latitude, pole_longitude, traversingwire,
+                    electricalpermitnumber, permiteffectivedate, landmark,
+                    status, sync_status, electrician_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
                 [
                     application_id,
                     formData.ClientType ?? null,
@@ -71,6 +72,7 @@ export const useSubmitData = () => {
                     formData.MotherFirstName ?? null,
                     formData.MotherMiddleName ?? null,
                     formData.MotherLastName ?? null,
+                    formData.has_representative ?? "No",
                     formData.RepresentativeFirstName ?? null,
                     formData.RepresentativeMiddleName ?? null,
                     formData.RepresentativeLastName ?? null,
@@ -107,15 +109,13 @@ export const useSubmitData = () => {
                 );
             }
 
-            await db.execAsync("COMMIT");
-
-            // ✅ Remove saved signature from AsyncStorage after success
+            await db.execAsync("COMMIT;");
             await AsyncStorage.removeItem("userSignature");
 
             console.log("Insert successful! Application ID:", application_id);
             return true;
         } catch (error) {
-            await db.execAsync("ROLLBACK");
+            await db.execAsync("ROLLBACK;");
             console.error("Error inserting data into metering_application or images:", error);
             return false;
         }

@@ -14,7 +14,7 @@ export default function Layout() {
     const transferDatabase = async () => {
         console.log("transferDatabase");
         try {
-            const databaseAsset = Asset.fromModule(require("@/database/latest_database.db"));
+            const databaseAsset = Asset.fromModule(require("@/database/hello.db"));
             await databaseAsset.downloadAsync();
             const sourceUri = databaseAsset.localUri || databaseAsset.uri;
             if (!sourceUri) {

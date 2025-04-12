@@ -25,8 +25,6 @@ const ParentsDetailsPage: React.FC = () => {
         "RepresentativeRelationship",
         "RepresentativeMobile",
         "RepresentativeEmail",
-        // "RepresentativeAttachedID",
-        // "RepresentativeSpecialPowerOfAttorney",
     ];
 
     const isFormComplete = requiredFields.every((field) => (formData[field] || "").trim() !== "");

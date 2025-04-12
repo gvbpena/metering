@@ -1,4 +1,3 @@
-// C:/Users/GPena/Desktop/expo-testing/metering/app/(electrician)_setup/_context.tsx
 import React, { createContext, useReducer, useContext, ReactNode, useMemo } from "react";
 
 export interface FormData {
@@ -51,7 +50,8 @@ export interface FormData {
     ElectricalPermitNumber?: string;
     PermitEffectiveDate?: string;
     LandMark?: string;
-    postal_code?: string | null; // Added | null for consistency
+    postal_code?: string | null;
+    SignatureURL?: string;
 }
 
 type Action = { type: "SET_INPUT_FIELD"; field: keyof FormData; payload: string | null } | { type: "SET_FORM_DATA"; payload: FormData };
@@ -67,7 +67,7 @@ const initialState: FormData = {
     GovernmentSubType: null,
     FirstName: undefined,
     MiddleName: undefined,
-    LastName: undefined, // Added missing initializations for completeness
+    LastName: undefined,
     Suffix: undefined,
     Birthdate: undefined,
     MaritalStatus: undefined,
@@ -106,7 +106,7 @@ const initialState: FormData = {
     ElectricalPermitNumber: undefined,
     PermitEffectiveDate: undefined,
     LandMark: undefined,
-    postal_code: null, // Initialized postal_code
+    postal_code: null,
 };
 
 const formReducer = (state: FormData, action: Action): FormData => {
@@ -143,7 +143,10 @@ export const groupedPages = [
         title: "Client Details",
         fields: ["FirstName", "MiddleName", "LastName", "Suffix", "Birthdate", "MaritalStatus", "MobileNo", "LandlineNo", "Email", "TIN", "TypeOfID", "IdNo"],
     },
-    { title: "Parent Information", fields: ["FatherFirstName", "FatherMiddleName", "FatherLastName", "MotherFirstName", "MotherMiddleName", "MotherLastName"] },
+    {
+        title: "Parent Information",
+        fields: ["FatherFirstName", "FatherMiddleName", "FatherLastName", "MotherFirstName", "MotherMiddleName", "MotherLastName"],
+    },
     {
         title: "Representative Information",
         fields: [
@@ -160,9 +163,13 @@ export const groupedPages = [
     {
         title: "Client Address",
         fields: ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo", "SitioPurokBuildingSubdivision", "postal_code"],
-    }, // Added postal_code
-    { title: "Metering Location", fields: ["NearMeterNo", "LandMark", "latitude", "longitude", "pole_latitude", "pole_longitude", "reference_pole"] },
-    { title: "Client Additional Info", fields: ["TraversingWire", "ElectricalPermitNumber", "PermitEffectiveDate"] },
+    },
+    {
+        title: "Metering Location",
+        fields: ["NearMeterNo", "LandMark", "latitude", "longitude", "pole_latitude", "pole_longitude", "reference_pole"],
+    },
+    {
+        title: "Client Additional Info",
+        fields: ["TraversingWire", "ElectricalPermitNumber", "PermitEffectiveDate"],
+    },
 ];
-
-// Removed unnecessary export of formReducer and initialState

@@ -71,6 +71,7 @@ const Page2 = () => {
     const handleInputChange = (field: keyof FormData, value: string) => {
         setLocalData((prev) => ({ ...prev, [field]: value }));
         setErrors((prev) => ({ ...prev, [field]: "" }));
+        dispatch({ type: "SET_FORM_DATA", payload: localData });
     };
 
     const handleDateChange = (_event: any, selectedDate?: Date) => {
@@ -83,14 +84,7 @@ const Page2 = () => {
 
     return (
         <View className="flex-1 bg-gray-50">
-            {/* <StackScreen title="Client Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={() => saveData} /> */}
-
-            <StackScreen
-                title="Customer Details"
-                nextRoute="/(electrician)_setup/page4"
-                nextLabel="Next"
-                onNext={() => true} // Pass a function returning true
-            />
+            <StackScreen title="Client Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={() => true} />
             <ScrollView className="p-8 space-y-8" contentContainerStyle={{ paddingBottom: 60 }}>
                 {["FirstName", "MiddleName", "LastName", "Suffix"].map((field) => (
                     <View key={field} className="my-3">

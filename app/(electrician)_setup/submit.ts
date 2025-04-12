@@ -1,6 +1,7 @@
 import useProfile from "@/services/profile";
 import { useFormData } from "./_context";
 import { useSQLiteContext } from "expo-sqlite";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const useSubmitData = () => {
     const db = useSQLiteContext();
@@ -21,6 +22,7 @@ export const useSubmitData = () => {
         }
 
         const application_id = formData.application_id ?? generateApplicationId();
+        const signatureUrl = formData.SignatureURL ?? null;
 
         console.log("Submitting data with application_id:", application_id);
 
@@ -41,7 +43,7 @@ export const useSubmitData = () => {
                     barangay, streethouseunitno, sitiopurokbuildingsubdivision, postal_code,
                     reference_pole, nearmeterno, pole_latitude, pole_longitude, traversingwire,
                     electricalpermitnumber, permiteffectivedate, landmark, status, sync_status, electrician_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`, // 52 placeholders
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
                 [
                     application_id,
                     formData.ClientType ?? null,
@@ -82,7 +84,7 @@ export const useSubmitData = () => {
                     formData.Barangay ?? null,
                     formData.StreetHouseUnitNo ?? null,
                     formData.SitioPurokBuildingSubdivision ?? null,
-                    formData.postal_code ?? null, // Added postal_code
+                    formData.postal_code ?? null,
                     formData.reference_pole ?? null,
                     formData.NearMeterNo ?? null,
                     formData.pole_latitude ?? null,
@@ -96,12 +98,25 @@ export const useSubmitData = () => {
                     data?.[0]?.id ?? null,
                 ]
             );
+
+            if (signatureUrl) {
+                await db.runAsync(
+                    `INSERT INTO images (image_url, reference_id, image_type, status)
+                     VALUES (?, ?, ?, ?);`,
+                    [signatureUrl, application_id, "Signature", "Unsynced"]
+                );
+            }
+
             await db.execAsync("COMMIT");
+
+            // ✅ Remove saved signature from AsyncStorage after success
+            await AsyncStorage.removeItem("userSignature");
+
             console.log("Insert successful! Application ID:", application_id);
             return true;
         } catch (error) {
             await db.execAsync("ROLLBACK");
-            console.error("Error inserting data into metering_application:", error);
+            console.error("Error inserting data into metering_application or images:", error);
             return false;
         }
     };

@@ -12,6 +12,7 @@ import { useActivityId } from "./_context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 
 interface MeteringApplication {
     id: number;
@@ -38,6 +39,35 @@ interface MeteringApplication {
     barangay: string;
     landmark?: string;
     status: string;
+    remarks?: string;
+    reference_pole?: string;
+    nearmeterno?: string;
+    pole_latitude?: string;
+    pole_longitude?: string;
+    meter_latitude?: string;
+    meter_longitude?: string;
+    premise_latitude?: string;
+    premise_longitude?: string;
+    traversingwire?: string;
+    deceasedlotowner?: string;
+    electricalpermitnumber?: string;
+    permiteffectivedate?: string;
+    fatherfirstname?: string;
+    fathermiddlename?: string;
+    fatherlastname?: string;
+    motherfirstname?: string;
+    mothermiddlename?: string;
+    motherlastname?: string;
+    representativefirstname?: string;
+    representativemiddlename?: string;
+    representativelastname?: string;
+    representativerelationship?: string;
+    representativemobile?: string;
+    representativeemail?: string;
+    representativeattachedid?: string;
+    representativespecialpowerofattorney?: string;
+    streethouseunitno?: string;
+    sitiopurokbuildingsubdivision?: string;
 }
 
 interface ImageData {
@@ -51,6 +81,7 @@ const captureButtons = [
     { label: "Identity Card", icon: "id-card" },
     { label: "Premises", icon: "home" },
     { label: "Signature", icon: "pencil" },
+    { label: "Attach Document", icon: "attach" },
 ];
 
 interface LocationCoords {
@@ -61,7 +92,7 @@ interface LocationCoords {
 interface LoadingState {
     Meterbase: boolean;
     Premises: boolean;
-    "Pole Images": boolean; // Use quotes for key with space
+    "Pole Images": boolean;
 }
 
 const groupedPages = [
@@ -220,37 +251,58 @@ const DetailsScreen = () => {
         if (!id) return;
 
         const query = `
-                    SELECT
-                        ma.*,
-                        i.image_type,
-                        GROUP_CONCAT(i.image_url) AS image_urls
-                    FROM
-                        metering_application ma
-                    LEFT JOIN
-                        images i
-                    ON
-                        ma.application_id = i.reference_id
-                    WHERE
-                        ma.application_id = ?
-                    GROUP BY
-                        i.image_type;
-                `;
+                        SELECT
+                            ma.*,
+                            i.image_type,
+                            GROUP_CONCAT(i.image_url) AS image_urls
+                        FROM
+                            metering_application ma
+                        LEFT JOIN
+                            images i
+                        ON
+                            ma.application_id = i.reference_id
+                        WHERE
+                            ma.application_id = ?
+                        GROUP BY
+                            i.image_type;
+                    `;
 
         try {
-            const result = await database.getAllAsync(query, [id]);
+            const result: any[] = await database.getAllAsync(query, [id]);
             if (result.length > 0) {
-                const meteringApplication = { ...(result[0] as MeteringApplication) };
-                const groupedImages: ImageData = {};
-                result.forEach((row: any) => {
-                    if (row.image_type) {
-                        groupedImages[row.image_type] = row.image_urls.split(",");
+                const firstRow = result.find((row) => row.application_id);
+                const meteringApplication = firstRow ? { ...(firstRow as MeteringApplication) } : null;
+
+                if (!meteringApplication) {
+                    const singleAppQuery = `SELECT * FROM metering_application WHERE application_id = ?`;
+                    const appResult: any = await database.getFirstAsync(singleAppQuery, [id]);
+                    if (appResult) {
+                        setSelectedRow(appResult as MeteringApplication);
+                        setImagesByType({});
+                    } else {
+                        setSelectedRow(null);
+                        setImagesByType({});
                     }
-                });
-                setSelectedRow(meteringApplication);
-                setImagesByType(groupedImages);
+                } else {
+                    const groupedImages: ImageData = {};
+                    result.forEach((row: any) => {
+                        if (row.image_type && row.image_urls) {
+                            groupedImages[row.image_type] = row.image_urls.split(",");
+                        }
+                    });
+                    setSelectedRow(meteringApplication);
+                    setImagesByType(groupedImages);
+                }
             } else {
-                setSelectedRow(null);
-                setImagesByType({});
+                const singleAppQuery = `SELECT * FROM metering_application WHERE application_id = ?`;
+                const appResult: any = await database.getFirstAsync(singleAppQuery, [id]);
+                if (appResult) {
+                    setSelectedRow(appResult as MeteringApplication);
+                    setImagesByType({});
+                } else {
+                    setSelectedRow(null);
+                    setImagesByType({});
+                }
             }
         } catch (error) {
             console.error("Error fetching data from SQLite:", error);
@@ -258,43 +310,73 @@ const DetailsScreen = () => {
         } finally {
             setLoading(false);
         }
-    }, [id]);
+    }, [id, database]);
 
     useFocusEffect(
         useCallback(() => {
             fetchData();
         }, [fetchData])
     );
-    useFocusEffect(
-        useCallback(() => {
-            const checkConditions = async () => {
-                const savedSignature = await AsyncStorage.getItem("userSignature");
-                const hasImages = captureButtons.some((item) => selectedImages[item.label]?.length > 0);
-                if (!selectedImages["Signature"]?.length && savedSignature) {
-                    await AsyncStorage.removeItem("userSignature");
-                }
-                setHasSelectedImages(hasImages || !!savedSignature);
-            };
-
-            checkConditions();
-        }, [selectedImages])
-    );
-
-    const canEndorsed = useMemo(() => {
-        return captureButtons.every((item) => imagesByType[item.label]?.length > 0);
-    }, [imagesByType]);
 
     useEffect(() => {
-        fetchData();
+        const checkHasSelected = () => {
+            const hasAnySelected = Object.values(selectedImages).some((uris) => uris.length > 0);
+            const hasLocation = !!meterLocation || !!premiseLocation || !!poleLocation;
+            const hasPermitInfo = !!selectedDate || !!permitNumber;
+            const hasIdInfo = !!selectedIdType || !!idNumber;
+            setHasSelectedImages(hasAnySelected || hasLocation || hasPermitInfo || hasIdInfo);
+        };
+        checkHasSelected();
+    }, [selectedImages, meterLocation, premiseLocation, poleLocation, selectedDate, permitNumber, selectedIdType, idNumber]);
+
+    const canEndorsed = useMemo(() => {
+        if (!selectedRow || (selectedRow.status.toLowerCase() !== "pending" && selectedRow.status.toLowerCase() !== "rejected")) {
+            return false;
+        }
+        const requiredImageTypes = captureButtons.map((btn) => btn.label);
+        return requiredImageTypes.every((type) => imagesByType[type]?.length > 0);
+    }, [imagesByType, selectedRow, captureButtons]);
+
+    useEffect(() => {
         if (id) {
             dispatch({ type: "SET_ACTIVITY_ID", payload: id });
         }
-    }, [fetchData, id, dispatch, canEndorsed]);
+    }, [id, dispatch]);
 
     const router = useRouter();
+
+    const launchDocumentPicker = async (category: string) => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                copyToCacheDirectory: true,
+                multiple: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const uris = result.assets.map((asset) => asset.uri);
+                setSelectedImages((prev) => ({
+                    ...prev,
+                    [category]: [...(prev[category] || []), ...uris],
+                }));
+            } else if (result.canceled) {
+                console.log("Document picking cancelled");
+            } else {
+                Alert.alert("Error", "Could not select document.");
+            }
+        } catch (error) {
+            console.error("Error picking document:", error);
+            Alert.alert("Error", "An error occurred while picking the document.");
+        }
+    };
+
     const pickImageOrTakePhoto = async (category: string) => {
         if (category === "Signature") {
             router.push("/consent" as any);
+            return;
+        }
+
+        if (category === "Attach Document") {
+            launchDocumentPicker(category);
             return;
         }
 
@@ -302,6 +384,7 @@ const DetailsScreen = () => {
             { text: "Cancel", style: "cancel" },
             { text: "Take Photo", onPress: () => launchCamera(category) },
         ];
+
         if (!["Meterbase", "Premises", "Pole Images"].includes(category)) {
             options.push({ text: "Choose from Gallery", onPress: () => launchImageLibrary(category) });
         }
@@ -317,7 +400,7 @@ const DetailsScreen = () => {
         }
 
         const result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
-        if (!result.canceled) {
+        if (!result.canceled && result.assets && result.assets.length > 0) {
             if (category === "Premises") {
                 getLocation("Premises");
             }
@@ -342,7 +425,7 @@ const DetailsScreen = () => {
             allowsMultipleSelection: true,
             quality: 1,
         });
-        if (!result.canceled) {
+        if (!result.canceled && result.assets && result.assets.length > 0) {
             setSelectedImages((prev) => ({ ...prev, [category]: [...(prev[category] || []), ...result.assets.map((asset) => asset.uri)] }));
         }
     };
@@ -350,21 +433,12 @@ const DetailsScreen = () => {
     const handleDeleteImage = async (category: string, uri: string) => {
         try {
             await deleteImageFromDatabase(uri);
-            setSelectedImages((prev) => {
-                const updatedImages = prev[category] ? prev[category].filter((imageUri) => imageUri !== uri) : [];
-                return {
-                    ...prev,
-                    [category]: updatedImages,
-                };
-            });
+
             if (category === "Signature") {
-                const updatedImages = selectedImages[category]?.filter((imageUri) => imageUri !== uri) || [];
-                if (updatedImages.length === 0) {
-                    await AsyncStorage.removeItem("userSignature");
-                }
+                await AsyncStorage.removeItem("userSignature");
             }
 
-            fetchData();
+            await fetchData();
             Alert.alert("Deleted", "Image deleted successfully.");
         } catch (error) {
             console.error("Error deleting image:", error);
@@ -388,50 +462,67 @@ const DetailsScreen = () => {
             </View>
         );
     }
+
     const handleSubmit = async () => {
         if (!id) {
             Alert.alert("Error", "Application ID is missing.");
             return;
         }
+
+        setLoading(true);
+
         try {
-            console.log("Updating Application Data with:", {
-                id,
-                selectedDate: selectedDate ? selectedDate.toISOString().split("T")[0] : undefined,
-                permitNumber,
-                selectedIdType,
-                idNumber,
-                meter_latitude: meterLocation?.latitude,
-                meter_longitude: meterLocation?.longitude,
-                premise_latitude: premiseLocation?.latitude,
-                premise_longitude: premiseLocation?.longitude,
-                pole_latitude: poleLocation?.latitude,
-                pole_longitude: poleLocation?.longitude,
-            });
+            const hasDataToUpdate =
+                selectedDate ||
+                permitNumber ||
+                selectedIdType ||
+                idNumber ||
+                meterLocation ||
+                premiseLocation ||
+                poleLocation ||
+                Object.keys(selectedImages).length > 0;
 
-            await updateApplicationData(
-                id,
-                selectedDate ? selectedDate.toISOString().split("T")[0] : undefined,
-                permitNumber,
-                selectedIdType,
-                idNumber,
-                meterLocation?.latitude?.toString(),
-                meterLocation?.longitude?.toString(),
-                premiseLocation?.latitude?.toString(),
-                premiseLocation?.longitude?.toString(),
-                poleLocation?.latitude?.toString(),
-                poleLocation?.longitude?.toString()
-            );
+            if (hasDataToUpdate) {
+                await updateApplicationData(
+                    id,
+                    selectedDate ? selectedDate.toISOString().split("T")[0] : undefined,
+                    permitNumber || undefined,
+                    selectedIdType || undefined,
+                    idNumber || undefined,
+                    meterLocation?.latitude?.toString(),
+                    meterLocation?.longitude?.toString(),
+                    premiseLocation?.latitude?.toString(),
+                    premiseLocation?.longitude?.toString(),
+                    poleLocation?.latitude?.toString(),
+                    poleLocation?.longitude?.toString()
+                );
 
-            for (const category of Object.keys(selectedImages)) {
-                await moveAndSaveImages(selectedImages[category], id, category);
+                for (const category of Object.keys(selectedImages)) {
+                    if (selectedImages[category] && selectedImages[category].length > 0) {
+                        await moveAndSaveImages(selectedImages[category], id, category);
+                    }
+                }
+
+                setSelectedImages({});
+                setMeterLocation(null);
+                setPremiseLocation(null);
+                setPoleLocation(null);
+                setSelectedDate(null);
+                setPermitNumber("");
+                setSelectedIdType("");
+                setIdNumber("");
+
+                await fetchData();
+
+                Alert.alert("Success", "Data and images saved successfully!");
+            } else {
+                Alert.alert("No Changes", "No new data or images to save.");
             }
-            setSelectedImages({});
-            await fetchData();
-
-            Alert.alert("Success", "All images moved, saved, and data refreshed successfully!");
         } catch (error) {
-            console.error("Move and save error:", error);
-            Alert.alert("Error", "Failed to move and save images.");
+            console.error("Save error:", error);
+            Alert.alert("Error", "Failed to save data or images.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -467,7 +558,6 @@ const DetailsScreen = () => {
                 return acc;
             }, {} as Record<string, string>),
         };
-        console.log("Data to pass:", groupedFields);
         router.push({
             pathname: "/(electrician)_fa/edit_page",
             params: {
@@ -510,6 +600,8 @@ const DetailsScreen = () => {
         "Voter's ID",
     ];
 
+    const isReadOnly = selectedRow?.status?.toLowerCase() === "approved" || selectedRow?.status?.toLowerCase() === "endorsed";
+
     return (
         <>
             <StackScreen
@@ -545,10 +637,11 @@ const DetailsScreen = () => {
 
                     return (
                         <View key={section.title} className="bg-white border border-gray-300 rounded-lg shadow-md mb-4 p-4 relative">
-                            <View className="flex-row items-center justify-between p-2 rounded-lg">
+                            <View className="flex-row items-center justify-between p-2 rounded-lg mb-2">
                                 <Text className="text-xl font-semibold text-gray-700 flex-1 flex-wrap">{section.title}</Text>
 
                                 {section.title !== "Remarks" &&
+                                    !isReadOnly &&
                                     (selectedRow.status.toLowerCase() === "rejected" || selectedRow.status.toLowerCase() === "pending") && (
                                         <TouchableOpacity
                                             onPress={() =>
@@ -577,7 +670,7 @@ const DetailsScreen = () => {
                                             badgeStyles = "bg-yellow-300 text-yellow-900";
                                             break;
                                         case "approved":
-                                            badgeStyles = "bg-green-300 text-white";
+                                            badgeStyles = "bg-green-300 text-green-900";
                                             break;
                                         case "endorsed":
                                             badgeStyles = "bg-blue-400 text-white";
@@ -589,14 +682,14 @@ const DetailsScreen = () => {
                                 }
 
                                 return (
-                                    <View key={field} className="flex-row justify-between py-1 items-center">
+                                    <View key={field} className="flex-row justify-between py-1 items-center px-2">
                                         {field !== "remarks" && <Text className="text-lg text-gray-600 font-medium flex-1">{fieldLabels[field] || field}</Text>}
                                         {section.title === "Client Information" && field === "status" ? (
                                             <Text className={`px-3 py-1 text-md font-bold rounded-full ${badgeStyles}`}>{value}</Text>
                                         ) : section.title === "Client Information" && field === "application_id" ? (
                                             <Text className="text-gray-800 font-bold text-xl">{value}</Text>
                                         ) : (
-                                            <Text className="text-gray-800 text-xl">{value}</Text>
+                                            <Text className="text-gray-800 text-xl flex-shrink text-right">{value}</Text>
                                         )}
                                     </View>
                                 );
@@ -605,220 +698,230 @@ const DetailsScreen = () => {
                     );
                 })}
 
-                {(selectedRow?.status?.toLowerCase() === "endorsed" || selectedRow?.status?.toLowerCase() === "approved") && (
-                    <View className="space-y-3 mb-6">
-                        {captureButtons.map((item) => (
-                            <View key={item.label} className="bg-white border border-gray-300 rounded-lg shadow-md p-4 mb-2">
-                                <Text className="text-lg text-gray-700 font-medium">{item.label}</Text>
+                <View className="space-y-3 mb-6">
+                    {captureButtons.map((item) => (
+                        <View key={item.label} className="bg-white border border-gray-300 rounded-lg shadow-md p-4 mb-2">
+                            <View className="flex-row items-center justify-between">
+                                <Text className="text-xl font-semibold text-gray-700">{item.label} </Text>
+                                {!isReadOnly && (
+                                    <TouchableOpacity
+                                        onPress={() => pickImageOrTakePhoto(item.label)}
+                                        className="w-1/2 h-10 flex-row items-center justify-center bg-white border border-gray-300 rounded-lg shadow-sm"
+                                    >
+                                        {item.label === "Attach Document" ? (
+                                            <Ionicons name="attach" size={20} color="gray" className="mr-2" />
+                                        ) : item.label === "Signature" ? (
+                                            <Ionicons name="pencil" size={20} color="gray" className="mr-2" />
+                                        ) : (
+                                            <Ionicons name="camera" size={20} color="gray" className="mr-2" />
+                                        )}
+                                        <Text className="text-lg text-gray-700 font-medium">
+                                            {item.label === "Attach Document" ? "Attach" : item.label === "Signature" ? "Sign" : "Capture"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
 
-                                {imagesByType[item.label] && imagesByType[item.label].length > 0 ? (
-                                    <View className="flex-row flex-wrap gap-2 mt-2">
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-                                            <View className="flex-row gap-2">
-                                                {imagesByType[item.label].map((uri, index) => (
+                            {!isReadOnly && item.label === "Premises" && (
+                                <View className="flex flex-row items-center mt-2">
+                                    {locationLoading.Premises && (
+                                        <View className="flex flex-row items-center">
+                                            <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
+                                            <Text className="text-sm text-gray-600">Fetching Location...</Text>
+                                        </View>
+                                    )}
+                                    {!locationLoading.Premises && premiseLocation && (
+                                        <Text className="text-sm text-gray-600">
+                                            Lat: {premiseLocation.latitude.toFixed(6)}, Long: {premiseLocation.longitude.toFixed(6)}
+                                        </Text>
+                                    )}
+                                    {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
+                                </View>
+                            )}
+
+                            {!isReadOnly && item.label === "Meterbase" && (
+                                <View className="flex flex-row items-center mt-2">
+                                    {locationLoading.Meterbase && (
+                                        <View className="flex flex-row items-center">
+                                            <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
+                                            <Text className="text-sm text-gray-600">Fetching Location...</Text>
+                                        </View>
+                                    )}
+                                    {!locationLoading.Meterbase && meterLocation && (
+                                        <Text className="text-sm text-gray-600">
+                                            Lat: {meterLocation.latitude.toFixed(6)}, Long: {meterLocation.longitude.toFixed(6)}
+                                        </Text>
+                                    )}
+                                    {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
+                                </View>
+                            )}
+
+                            {!isReadOnly && item.label === "Pole Images" && (
+                                <View className="flex flex-row items-center mt-2">
+                                    {locationLoading["Pole Images"] && (
+                                        <View className="flex flex-row items-center">
+                                            <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
+                                            <Text className="text-sm text-gray-600">Fetching Location...</Text>
+                                        </View>
+                                    )}
+                                    {!locationLoading["Pole Images"] && poleLocation && (
+                                        <Text className="text-sm text-gray-600">
+                                            Lat: {poleLocation.latitude.toFixed(6)}, Long: {poleLocation.longitude.toFixed(6)}
+                                        </Text>
+                                    )}
+                                    {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
+                                </View>
+                            )}
+
+                            {!isReadOnly && selectedImages[item.label]?.length > 0 && (
+                                <View className="mt-2">
+                                    <Text className="text-md font-medium text-blue-600 mb-1">New:</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        <View className="flex-row space-x-2">
+                                            {selectedImages[item.label].map((uri, index) =>
+                                                item.label === "Attach Document" ? (
+                                                    <View
+                                                        key={`${item.label}-new-${index}`}
+                                                        className="relative p-2 border border-blue-300 rounded-lg bg-blue-50 w-24 h-24 items-center justify-center"
+                                                    >
+                                                        <Ionicons name="document-text-outline" size={32} color="gray" />
+                                                        <Text numberOfLines={2} ellipsizeMode="tail" className="text-xs text-center mt-1">
+                                                            {decodeURIComponent(uri.split("/").pop() || "File")}
+                                                        </Text>
+                                                        <TouchableOpacity
+                                                            className="absolute -top-1 -right-1 bg-red-500 p-1 rounded-full z-10"
+                                                            onPress={() => {
+                                                                setSelectedImages((prev) => ({
+                                                                    ...prev,
+                                                                    [item.label]: prev[item.label]?.filter((_, i) => i !== index),
+                                                                }));
+                                                            }}
+                                                        >
+                                                            <Ionicons name="close" size={14} color="white" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                ) : (
+                                                    <View key={`${item.label}-new-${index}`} className="relative">
+                                                        <Image source={{ uri }} className="w-24 h-24 rounded-lg border border-blue-300" />
+                                                        <TouchableOpacity
+                                                            className="absolute -top-1 -right-1 bg-red-500 p-1 rounded-full z-10"
+                                                            onPress={() => {
+                                                                setSelectedImages((prev) => ({
+                                                                    ...prev,
+                                                                    [item.label]: prev[item.label]?.filter((_, i) => i !== index),
+                                                                }));
+                                                                if (item.label === "Meterbase") setMeterLocation(null);
+                                                                if (item.label === "Premises") setPremiseLocation(null);
+                                                                if (item.label === "Pole Images") setPoleLocation(null);
+                                                            }}
+                                                        >
+                                                            <Ionicons name="close" size={14} color="white" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                )
+                                            )}
+                                        </View>
+                                    </ScrollView>
+                                    {!isReadOnly && item.label === "Identity Card" && (
+                                        <View className="w-full mt-4">
+                                            <Text className="text-md font-medium text-gray-600 mb-1">ID Details:</Text>
+                                            <View className="border border-gray-300 rounded-lg bg-white mb-2">
+                                                <Picker selectedValue={selectedIdType} onValueChange={(itemValue) => setSelectedIdType(itemValue)}>
+                                                    <Picker.Item label="Select ID Type" value="" />
+                                                    {IdTypes.map((idType, index) => (
+                                                        <Picker.Item key={index} label={idType} value={idType} />
+                                                    ))}
+                                                </Picker>
+                                            </View>
+                                            <TextInput
+                                                className="border border-gray-300 rounded-lg px-4 p-4 bg-white text-xl text-gray-900"
+                                                placeholder="Enter ID Number"
+                                                placeholderTextColor="#9CA3AF"
+                                                value={idNumber}
+                                                onChangeText={setIdNumber}
+                                            />
+                                        </View>
+                                    )}
+                                    {!isReadOnly && item.label === "Permit" && (
+                                        <View className="w-full mt-4">
+                                            <Text className="text-md font-medium text-gray-600 mb-1">Permit Details:</Text>
+                                            <TouchableOpacity
+                                                className="border border-gray-300 rounded-lg px-4 p-4 bg-white mb-2"
+                                                onPress={() => setShowDatePicker(true)}
+                                            >
+                                                <Text className="text-xl text-gray-900">
+                                                    {selectedDate ? selectedDate.toLocaleDateString() : "Permit Effective Date"}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            {showDatePicker && (
+                                                <DateTimePicker value={selectedDate || new Date()} mode="date" display="default" onChange={handleDateChange} />
+                                            )}
+                                            <TextInput
+                                                className="border border-gray-300 rounded-lg px-4 p-4 bg-white text-xl text-gray-900"
+                                                placeholder="Enter Permit Number"
+                                                placeholderTextColor="#9CA3AF"
+                                                value={permitNumber}
+                                                onChangeText={setPermitNumber}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+
+                            {imagesByType[item.label] && imagesByType[item.label].length > 0 ? (
+                                <View className="mt-2">
+                                    <Text className="text-md font-medium text-green-600 mb-1">Saved:</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                        <View className="flex-row gap-2">
+                                            {imagesByType[item.label].map((uri, index) =>
+                                                item.label === "Attach Document" ? (
+                                                    <TouchableOpacity key={`${item.label}-saved-${index}`}>
+                                                        <View className="relative p-2 border border-gray-300 rounded-lg bg-gray-100 w-24 h-24 items-center justify-center">
+                                                            <Ionicons name="document-text-outline" size={32} color="gray" />
+                                                            <Text numberOfLines={2} ellipsizeMode="tail" className="text-xs text-center mt-1">
+                                                                {decodeURIComponent(uri.split("/").pop() || "File")}
+                                                            </Text>
+                                                            {!isReadOnly && (
+                                                                <TouchableOpacity
+                                                                    className="absolute -top-1 -right-1 bg-red-500 p-1 rounded-full z-10"
+                                                                    onPress={() => handleDeleteImage(item.label, uri)}
+                                                                >
+                                                                    <Ionicons name="trash" size={14} color="white" />
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                ) : (
                                                     <TouchableOpacity
-                                                        key={index}
+                                                        key={`${item.label}-saved-${index}`}
                                                         onPress={() => {
                                                             setModalImageUri(uri);
                                                             setModalVisible(true);
                                                         }}
                                                     >
                                                         <View className="relative">
-                                                            <Image source={{ uri }} className="w-24 h-24 rounded-lg" />
-                                                            {selectedRow?.status?.toLowerCase() !== "endorsed" &&
-                                                                selectedRow?.status?.toLowerCase() !== "approved" && (
-                                                                    <TouchableOpacity
-                                                                        className="absolute top-1 right-1 bg-red-500 p-1 rounded-full"
-                                                                        onPress={() => handleDeleteImage(item.label, uri)}
-                                                                    >
-                                                                        <Ionicons name="trash" size={16} color="white" />
-                                                                    </TouchableOpacity>
-                                                                )}
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </View>
-                                        </ScrollView>
-                                    </View>
-                                ) : (
-                                    <Text className="text-lg text-gray-500 mt-2">No images added</Text>
-                                )}
-                            </View>
-                        ))}
-                    </View>
-                )}
-                {selectedRow?.status?.toLowerCase() !== "endorsed" && selectedRow?.status?.toLowerCase() !== "approved" && (
-                    <View className="space-y-3 mb-6">
-                        {captureButtons.map((item) => (
-                            <View key={item.label} className="bg-white border border-gray-300 rounded-lg shadow-md p-4 mb-2">
-                                <View className="flex-row items-center justify-between">
-                                    <Text className="text-xl font-semibold text-gray-700">{item.label} </Text>
-                                    <TouchableOpacity
-                                        onPress={() => pickImageOrTakePhoto(item.label)}
-                                        className="w-1/2 h-10 flex-row items-center justify-center bg-white border border-gray-300 rounded-lg shadow-sm"
-                                    >
-                                        <Ionicons name="camera" size={20} color="gray" className="mr-2" />
-                                        <Text className="text-lg text-gray-700 font-medium">Capture</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {item.label === "Premises" && (
-                                    <View className="flex flex-row items-center">
-                                        {locationLoading.Premises && (
-                                            <View className="flex flex-row items-center">
-                                                <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
-                                                <Text className="text-sm text-gray-600">Fetching Location...</Text>
-                                            </View>
-                                        )}
-
-                                        {!locationLoading.Premises && premiseLocation && (
-                                            <Text className="text-sm text-gray-600 mb-2">
-                                                Lat: {premiseLocation.latitude}, Long: {premiseLocation.longitude}
-                                            </Text>
-                                        )}
-                                    </View>
-                                )}
-
-                                {item.label === "Meterbase" && (
-                                    <View className="flex flex-row items-center">
-                                        {locationLoading.Meterbase && (
-                                            <View className="flex flex-row items-center">
-                                                <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
-                                                <Text className="text-sm text-gray-600">Fetching Location...</Text>
-                                            </View>
-                                        )}
-                                        {!locationLoading.Meterbase && meterLocation && (
-                                            <Text className="text-sm text-gray-600 mb-2">
-                                                Lat: {meterLocation.latitude}, Long: {meterLocation.longitude}
-                                            </Text>
-                                        )}
-                                    </View>
-                                )}
-
-                                {item.label === "Pole Images" && (
-                                    <View className="flex flex-row items-center">
-                                        {locationLoading["Pole Images"] && ( // Use bracket notation
-                                            <View className="flex flex-row items-center">
-                                                <ActivityIndicator size="small" color="#4B5563" className="mr-2" />
-                                                <Text className="text-sm text-gray-600">Fetching Location...</Text>
-                                            </View>
-                                        )}
-
-                                        {!locationLoading["Pole Images"] &&
-                                            poleLocation && ( // Use bracket notation
-                                                <Text className="text-sm text-gray-600 mb-2">
-                                                    Lat: {poleLocation.latitude}, Long: {poleLocation.longitude}
-                                                </Text>
-                                            )}
-                                    </View>
-                                )}
-
-                                {selectedImages[item.label]?.length > 0 && (
-                                    <View className="flex-row flex-wrap gap-2 mt-2">
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                            <View className="flex-row space-x-2">
-                                                {selectedImages[item.label].map((uri, index) => (
-                                                    <View key={index} className="relative">
-                                                        <Image source={{ uri }} className="w-24 h-24 rounded-lg" />
-                                                        <TouchableOpacity
-                                                            className="absolute top-1 right-1 bg-red-500 p-1 rounded-full"
-                                                            onPress={() => {
-                                                                setSelectedImages((prev) => ({
-                                                                    ...prev,
-                                                                    [item.label]: prev[item.label].filter((_, i) => i !== index),
-                                                                }));
-                                                                if (item.label === "Meterbase") {
-                                                                    setMeterLocation(null);
-                                                                }
-                                                                if (item.label === "Premises") {
-                                                                    setPremiseLocation(null);
-                                                                }
-                                                                if (item.label === "Pole Images") {
-                                                                    setPoleLocation(null);
-                                                                }
-                                                            }}
-                                                        >
-                                                            <Ionicons name="close" size={16} color="white" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                ))}
-                                            </View>
-                                        </ScrollView>
-                                        {item.label === "Identity Card" && (
-                                            <View className="w-full mt-2">
-                                                <View className="border border-gray-300 rounded-lg bg-white my-2">
-                                                    <Picker selectedValue={selectedIdType} onValueChange={(itemValue) => setSelectedIdType(itemValue)}>
-                                                        <Picker.Item label="Select ID Type" value="" />
-                                                        {IdTypes.map((idType, index) => (
-                                                            <Picker.Item key={index} label={idType} value={idType} />
-                                                        ))}
-                                                    </Picker>
-                                                </View>
-                                                <TextInput
-                                                    className="border border-gray-300 rounded-lg px-4 p-4 bg-white text-xl text-gray-900"
-                                                    placeholder="Enter ID Number"
-                                                    placeholderTextColor="#9CA3AF"
-                                                    value={idNumber}
-                                                    onChangeText={setIdNumber}
-                                                />
-                                            </View>
-                                        )}
-                                        {item.label === "Permit" && (
-                                            <View className="w-full mt-2">
-                                                <TouchableOpacity
-                                                    className="border border-gray-300 rounded-lg px-4 p-4 bg-white my-2"
-                                                    onPress={() => setShowDatePicker(true)}
-                                                >
-                                                    <Text className="text-xl text-gray-900">
-                                                        {selectedDate ? selectedDate.toLocaleDateString() : "Permit Effective Date"}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                                {showDatePicker && (
-                                                    <DateTimePicker
-                                                        value={selectedDate || new Date()}
-                                                        mode="date"
-                                                        display="default"
-                                                        onChange={handleDateChange}
-                                                    />
-                                                )}
-                                                <TextInput
-                                                    className="border border-gray-300 rounded-lg px-4 p-4 bg-white text-xl text-gray-900"
-                                                    placeholder="Enter Permit Number"
-                                                    placeholderTextColor="#9CA3AF"
-                                                    value={permitNumber}
-                                                    onChangeText={setPermitNumber}
-                                                />
-                                            </View>
-                                        )}
-                                    </View>
-                                )}
-                                {imagesByType[item.label] && imagesByType[item.label].length > 0 ? (
-                                    <View className="flex-row flex-wrap gap-2 mt-2">
-                                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-                                            <View className="flex-row gap-2">
-                                                {imagesByType[item.label].map((uri, index) => (
-                                                    <View key={index} className="relative">
-                                                        <Image source={{ uri }} className="w-24 h-24 rounded-lg" />
-                                                        {selectedRow?.status?.toLowerCase() !== "endorsed" &&
-                                                            selectedRow?.status?.toLowerCase() !== "approved" && (
+                                                            <Image source={{ uri }} className="w-24 h-24 rounded-lg border border-gray-300" />
+                                                            {!isReadOnly && (
                                                                 <TouchableOpacity
-                                                                    className="absolute top-1 right-1 bg-red-500 p-1 rounded-full"
+                                                                    className="absolute -top-1 -right-1 bg-red-500 p-1 rounded-full z-10"
                                                                     onPress={() => handleDeleteImage(item.label, uri)}
                                                                 >
-                                                                    <Ionicons name="trash" size={16} color="white" />
+                                                                    <Ionicons name="trash" size={14} color="white" />
                                                                 </TouchableOpacity>
                                                             )}
-                                                    </View>
-                                                ))}
-                                            </View>
-                                        </ScrollView>
-                                    </View>
-                                ) : (
-                                    <Text className="text-lg text-gray-500 mt-2">No images added</Text>
-                                )}
-                            </View>
-                        ))}
-                    </View>
-                )}
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                )
+                                            )}
+                                        </View>
+                                    </ScrollView>
+                                </View>
+                            ) : (
+                                !selectedImages[item.label]?.length && <Text className="text-lg text-gray-500 mt-2">No items added</Text>
+                            )}
+                        </View>
+                    ))}
+                </View>
             </ScrollView>
             <Modal
                 visible={modalVisible}
@@ -834,28 +937,30 @@ const DetailsScreen = () => {
                         flex: 1,
                         backgroundColor: "rgba(0,0,0,0.8)",
                         justifyContent: "center",
+                        alignItems: "center",
                     }}
+                    onPress={() => setModalVisible(false)}
                 >
-                    <View className="relative">
+                    <View style={{ width: "95%", height: "85%" }}>
                         {modalImageUri && (
                             <Image
                                 source={{ uri: modalImageUri }}
-                                className="rounded-md"
                                 style={{
                                     width: "100%",
-                                    height: "95%",
+                                    height: "100%",
                                     resizeMode: "contain",
+                                    borderRadius: 5,
                                 }}
                             />
                         )}
                         <TouchableOpacity
                             style={{
                                 position: "absolute",
-                                top: 110,
-                                right: 20,
+                                top: 10,
+                                right: 10,
                                 backgroundColor: "rgba(0,0,0,0.6)",
-                                padding: 10,
-                                borderRadius: 50,
+                                padding: 8,
+                                borderRadius: 20,
                             }}
                             onPress={() => {
                                 setModalVisible(false);

@@ -4,18 +4,19 @@ import SignatureScreen from "react-native-signature-canvas";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system";
-import { useSubmitSetupData } from "../(electrician)_fa/submit";
-import { useActivityId } from "../(electrician)_fa/_context";
 import StackScreen from "./_stackscreen";
+import { useFormData } from "./_context"; // ✅ import context
 
 const SignaturePage = () => {
     const signatureRef = useRef<any>(null);
     const router = useRouter();
     const [signature, setSignature] = useState<string | null>(null);
     const [isConfirmed, setIsConfirmed] = useState(false);
-    const { state } = useActivityId();
-    const { moveAndSaveImages, deleteImageFromDatabase } = useSubmitSetupData();
-    const referenceId = state.activityId;
+
+    const { dispatch } = useFormData(); // ✅ use context
+    // const { state } = useActivityId();
+    // const { moveAndSaveImages, deleteImageFromDatabase } = useSubmitSetupData();
+    // const referenceId = state.activityId;
     const imageType = "Signature";
 
     useEffect(() => {
@@ -24,6 +25,7 @@ const SignaturePage = () => {
             if (savedSignature) {
                 setSignature(savedSignature);
                 setIsConfirmed(true);
+                dispatch({ type: "SET_INPUT_FIELD", field: "SignatureURL", payload: savedSignature }); // ✅ also restore to context
             }
         };
         loadSignature();
@@ -42,7 +44,8 @@ const SignaturePage = () => {
             setIsConfirmed(true);
             await AsyncStorage.setItem("userSignature", filePath);
 
-            await moveAndSaveImages([filePath], referenceId, imageType);
+            dispatch({ type: "SET_INPUT_FIELD", field: "SignatureURL", payload: filePath }); // ✅ save to context
+            // await moveAndSaveImages([filePath], referenceId, imageType);
         } catch (error) {
             console.error("Error saving signature:", error);
             Alert.alert("Error", "Failed to save signature.");
@@ -50,14 +53,14 @@ const SignaturePage = () => {
     };
 
     const handleClear = async () => {
-        console.log(signature);
         if (signature) {
-            await deleteImageFromDatabase(signature);
+            // await deleteImageFromDatabase(signature);
         }
         signatureRef.current?.clearSignature();
         setSignature(null);
         setIsConfirmed(false);
         await AsyncStorage.removeItem("userSignature");
+        dispatch({ type: "SET_INPUT_FIELD", field: "SignatureURL", payload: null }); // ✅ clear from context
     };
 
     return (

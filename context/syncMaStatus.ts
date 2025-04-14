@@ -30,7 +30,7 @@ const useSyncMeteringApplication = () => {
                 database
                     .getAllAsync<MeteringApplication>("SELECT application_id, status FROM metering_application WHERE electrician_id = ?", [electricianId])
                     .then((result) => {
-                        console.log("📥 SQLite rows:", result);
+                        // console.log("📥 SQLite rows:", result);
                         return result;
                     }),
                 fetch("https://genius-dev.aboitizpower.com/mygenius2/metering_api/fetch_metering_application_sync.php", {
@@ -38,7 +38,7 @@ const useSyncMeteringApplication = () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ key: "QosSAiS4kjArpMCr" }),
                 }).then(async (response) => {
-                    console.log("🌐 PostgreSQL fetch response status:", response.status);
+                    // console.log("🌐 PostgreSQL fetch response status:", response.status);
                     return response;
                 }),
             ]);
@@ -63,7 +63,7 @@ const useSyncMeteringApplication = () => {
                 const sqliteStatus = sqliteMap.get(pgItem.application_id);
                 return sqliteStatus === undefined || sqliteStatus !== pgItem.status;
             });
-            console.log("😎 differences: ", diff);
+            // console.log("😎 differences: ", diff);
             setDifferences(diff);
         } catch (error) {
             console.error("Error fetching data:", error);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Image, Pressable, ActivityIndicator, Text, Platform } from "react-native";
+import { View, TextInput, Image, Pressable, ActivityIndicator, Text } from "react-native";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSQLiteContext } from "expo-sqlite";
-import useProfile from "@/services/profile"; // Adjust path if needed
+import useProfile from "@/services/profile";
 
 interface QueryResult {
     count: number;
@@ -50,14 +50,6 @@ export default function LoginScreen() {
                 const updateQuery = `UPDATE metering_user SET name = ?, username = ?, email = ?, crewname = ?, orgname = ?, role = ? WHERE id = ?`;
                 await database.runAsync(updateQuery, [name, username, email, crewname, orgname, role, id]);
             }
-
-            switch (role) {
-                case "Electrician":
-                    router.replace("/(electrician)" as any);
-                    break;
-                default:
-                    setError(`Unauthorized Role (${role}). Contact Support.`);
-            }
         } catch (error) {
             console.error("Error inserting/updating user:", error);
             setError("Database error during login. Please try again.");
@@ -75,8 +67,6 @@ export default function LoginScreen() {
 
         const url = "https://genius-dev.aboitizpower.com/mygenius2/metering_api/metering_user/user_login.php";
         const deviceInfo = deviceIdentifier || "unknown_device";
-        console.log("handleLogin Clicked");
-        console.log("Device Info:", deviceInfo);
 
         const data = {
             username,
@@ -92,23 +82,28 @@ export default function LoginScreen() {
             });
 
             const text = await response.text();
-            console.log("Raw response:", text);
+            const result = JSON.parse(text);
 
-            try {
-                const result = JSON.parse(text);
-                console.log("Parsed JSON response:", result);
+            if (result.status === "success" && result.user) {
+                const { user_id, first_name, last_name, username: apiUsername, email, role, crew_name = "", org_name = "", new: isNew } = result.user;
 
-                if (result.status === "success" && result.user) {
-                    const { user_id, first_name, last_name, username: apiUsername, email, role, crew_name = "", org_name = "" } = result.user;
-                    await authLogin(user_id, `${first_name} ${last_name}`, apiUsername, email, crew_name, org_name, role);
-                } else if (result.message) {
-                    setError(result.message || "Login failed. Please check your credentials.");
+                await authLogin(user_id, `${first_name} ${last_name}`, apiUsername, email, crew_name, org_name, role);
+
+                if (isNew === true || isNew === "true") {
+                    router.replace("/profile/change_password");
                 } else {
-                    setError("Unknown login error occurred.");
+                    switch (role) {
+                        case "Electrician":
+                            router.replace("/(electrician)" as any);
+                            break;
+                        default:
+                            setError(`Unauthorized Role (${role}). Contact Support.`);
+                    }
                 }
-            } catch (jsonError) {
-                console.error("JSON Parse Error:", jsonError);
-                setError("Invalid server response. Please contact support.");
+            } else if (result.message) {
+                setError(result.message || "Login failed. Please check your credentials.");
+            } else {
+                setError("Unknown login error occurred.");
             }
         } catch (err) {
             console.error("Network error:", err);
@@ -136,6 +131,7 @@ export default function LoginScreen() {
                     autoCapitalize="none"
                 />
             </View>
+
             <View className="mb-3 flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-300">
                 <Icon name="lock" size={24} color="gray" className="mr-4" />
                 <TextInput
@@ -161,16 +157,6 @@ export default function LoginScreen() {
                 <Pressable className="bg-[#0066A0] rounded-xl py-4 mb-4 flex justify-center items-center" onPress={handleLogin} disabled={isLoadingIdentifier}>
                     <Text className="text-white text-lg font-semibold">Login</Text>
                 </Pressable>
-            )}
-
-            {isLoadingIdentifier ? (
-                <Text className="text-center text-gray-400 text-xs mb-1">Loading device info...</Text>
-            ) : deviceIdentifier ? (
-                <Text className="text-center text-gray-400 text-xs mb-1" selectable={true}>
-                    Device: {deviceIdentifier}
-                </Text>
-            ) : (
-                <Text className="text-center text-gray-400 text-xs mb-1">Device info unavailable</Text>
             )}
 
             <Text className="mt-1 text-center text-gray-500 text-sm">

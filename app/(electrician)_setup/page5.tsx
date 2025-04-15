@@ -68,7 +68,7 @@ const ClientAddressPage = () => {
                                 onChangeText={(text) => handleInputChange(field, text)}
                                 placeholder={`Enter ${formatLabel(field)}`}
                                 placeholderTextColor="#9CA3AF"
-                                keyboardType={field === "postal_code" ? "phone-pad" : "default"}
+                                keyboardType={field === "postal_code" ? "number-pad" : "default"}
                             />
                         </View>
                     ))}

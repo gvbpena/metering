@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Platform, KeyboardTypeOptions } from "react-native";
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useFormData } from "./_context";
@@ -84,7 +84,7 @@ const Page2 = () => {
 
     return (
         <View className="flex-1 bg-gray-50">
-            <StackScreen title="Client Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={() => true} />
+            <StackScreen title="Customer Details" nextRoute="/(electrician)_setup/page4" nextLabel="Next" onNext={() => true} />
             <ScrollView className="p-8 space-y-8" contentContainerStyle={{ paddingBottom: 60 }}>
                 {["FirstName", "MiddleName", "LastName", "Suffix"].map((field) => (
                     <View key={field} className="my-3">
@@ -95,12 +95,13 @@ const Page2 = () => {
                             onChangeText={(text) => handleInputChange(field as keyof FormData, text)}
                             placeholder={`Enter ${field}`}
                             placeholderTextColor="#9CA3AF"
+                            keyboardType="default"
+                            autoCapitalize="words"
                         />
                         {errors[field as keyof FormData] && <Text className="text-red-500 text-sm">{errors[field as keyof FormData]}</Text>}
                     </View>
                 ))}
 
-                {/* Birthdate Picker */}
                 <View className="my-3">
                     <FormLabel field="Birthdate" label="Birthdate" />
                     <TouchableOpacity className="border border-gray-300 rounded-xl px-5 py-5 bg-white" onPress={() => setShowDatePicker(true)}>
@@ -116,8 +117,6 @@ const Page2 = () => {
                         />
                     )}
                 </View>
-
-                {/* Marital Status Dropdown */}
                 <View className="my-3">
                     <FormLabel field="MaritalStatus" label="Marital Status" />
                     <DropDownPicker
@@ -158,7 +157,7 @@ const Page2 = () => {
                             onChangeText={(text) => handleInputChange(field as keyof FormData, text)}
                             placeholder={`Enter ${field}`}
                             placeholderTextColor="#9CA3AF"
-                            keyboardType={field === "Email" ? "email-address" : "default"}
+                            keyboardType={field === "Email" ? "email-address" : field === "MobileNo" || field === "LandlineNo" ? "number-pad" : "default"}
                         />
                         {errors[field as keyof FormData] && <Text className="text-red-500 text-sm">{errors[field as keyof FormData]}</Text>}
                     </View>

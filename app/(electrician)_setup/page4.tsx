@@ -113,7 +113,7 @@ const ParentsDetailsPage: React.FC = () => {
                                         placeholder={`Enter ${field.replace(/([A-Z])/g, " $1").trim()}`}
                                         placeholderTextColor="#9CA3AF"
                                         keyboardType={
-                                            field === "RepresentativeEmail" ? "email-address" : field === "RepresentativeMobile" ? "phone-pad" : "default"
+                                            field === "RepresentativeEmail" ? "email-address" : field === "RepresentativeMobile" ? "number-pad" : "default"
                                         }
                                     />
                                     {showError && typeof formData[field] === "string" && formData[field]?.trim() === "" && (

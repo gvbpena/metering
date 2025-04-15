@@ -1,40 +1,47 @@
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, StatusBar, ScrollView, Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import useProfile from "@/services/profile";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, StatusBar, ScrollView } from "react-native";
+import Modal from "react-native-modal";
 
 const ChangePasswordScreen: React.FC = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(true);
     const { data } = useProfile();
     const router = useRouter();
+
     useEffect(() => {
-        Alert.alert("Welcome to Genius Metering", "Your secure password update starts here.", [{ text: "OK, Let's begin", style: "default" }]);
+        setIsModalVisible(true);
     }, []);
+
+    const closeModal = () => {
+        setIsModalVisible(false);
+    };
 
     const handleChangePassword = async () => {
         if (!data || !Array.isArray(data) || data.length === 0) {
-            Alert.alert("Error", "User data is not available.");
+            setErrorMessage("User data is not available.");
             return;
         }
 
         if (!newPassword || !confirmNewPassword) {
-            Alert.alert("Error", "Please fill in all fields.");
+            setErrorMessage("Please fill in all fields.");
             return;
         }
 
         if (newPassword !== confirmNewPassword) {
-            Alert.alert("Error", "New passwords do not match.");
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            Alert.alert("Error", "New password must be at least 8 characters long.");
+            setErrorMessage("New passwords do not match.");
             return;
         }
 
         setIsLoading(true);
+        setErrorMessage("");
 
         try {
             const response = await fetch("https://genius-dev.aboitizpower.com/mygenius2/metering_api/metering_user/change_password.php", {
@@ -53,17 +60,21 @@ const ChangePasswordScreen: React.FC = () => {
                 throw new Error(result.error || "Something went wrong.");
             }
 
-            Alert.alert("Success", result.message || "Password changed successfully!", [
-                {
-                    text: "OK",
-                    onPress: () => router.replace("(electrician)" as any),
-                },
-            ]);
-
-            setNewPassword("");
-            setConfirmNewPassword("");
+            Alert.alert(
+                "Success",
+                "Password updated successfully!",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => {
+                            router.replace("(electrician)/" as any);
+                        },
+                    },
+                ],
+                { cancelable: false }
+            );
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            setErrorMessage(error.message);
         } finally {
             setIsLoading(false);
         }
@@ -78,37 +89,54 @@ const ChangePasswordScreen: React.FC = () => {
                 keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
             >
                 <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-                    <Text className="text-3xl font-bold text-[#0066A0] mb-8">Change Password</Text>
+                    <Text className="text-4xl font-bold text-[#0066A0] mb-8">Change Password</Text>
 
                     <View className="mb-6 space-y-2">
-                        <Text className="text-sm font-medium text-gray-700">New Password</Text>
-                        <TextInput
-                            className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
-                            placeholder="Enter your new password"
-                            placeholderTextColor="#9CA3AF"
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            textContentType="newPassword"
-                            editable={!isLoading}
-                        />
+                        <Text className="text-lg font-medium text-gray-700">New Password</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-lg text-gray-900"
+                                placeholder="Enter your new password"
+                                placeholderTextColor="#9CA3AF"
+                                value={newPassword}
+                                onChangeText={setNewPassword}
+                                secureTextEntry={!showNewPassword}
+                                autoCapitalize="none"
+                                textContentType="newPassword"
+                                editable={!isLoading}
+                            />
+                            <TouchableOpacity
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                onPress={() => setShowNewPassword(!showNewPassword)}
+                            >
+                                <Ionicons name={showNewPassword ? "eye-off" : "eye"} size={28} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
+                        {errorMessage && <Text className="text-xs text-red-500 mt-1">{errorMessage}</Text>}
                     </View>
 
                     <View className="mb-8 space-y-2">
-                        <Text className="text-sm font-medium text-gray-700">Confirm New Password</Text>
-                        <TextInput
-                            className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
-                            placeholder="Confirm your new password"
-                            placeholderTextColor="#9CA3AF"
-                            value={confirmNewPassword}
-                            onChangeText={setConfirmNewPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            textContentType="newPassword"
-                            onSubmitEditing={handleChangePassword}
-                            editable={!isLoading}
-                        />
+                        <Text className="text-lg font-medium text-gray-700">Confirm New Password</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-lg text-gray-900"
+                                placeholder="Confirm your new password"
+                                placeholderTextColor="#9CA3AF"
+                                value={confirmNewPassword}
+                                onChangeText={setConfirmNewPassword}
+                                secureTextEntry={!showConfirmNewPassword}
+                                autoCapitalize="none"
+                                textContentType="newPassword"
+                                onSubmitEditing={handleChangePassword}
+                                editable={!isLoading}
+                            />
+                            <TouchableOpacity
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                            >
+                                <Ionicons name={showConfirmNewPassword ? "eye-off" : "eye"} size={28} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     <TouchableOpacity
@@ -116,10 +144,30 @@ const ChangePasswordScreen: React.FC = () => {
                         onPress={handleChangePassword}
                         disabled={isLoading}
                     >
-                        <Text className="text-base font-semibold text-white">{isLoading ? "Updating..." : "Update Password"}</Text>
+                        <Text className="text-lg font-semibold text-white">{isLoading ? "Updating..." : "Update Password"}</Text>
                     </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            <Modal
+                isVisible={isModalVisible}
+                onBackdropPress={closeModal}
+                animationIn="zoomIn"
+                animationOut="zoomOut"
+                backdropOpacity={0.5}
+                style={{ justifyContent: "center", alignItems: "center", margin: 0 }}
+            >
+                <View className="bg-white p-8 rounded-xl shadow-lg w-3/4">
+                    <Text className="text-3xl font-semibold text-[#0066A0] mb-6">Welcome to Metering Application</Text>
+                    <Text className="text-lg text-gray-600 mb-8">
+                        You need to change your password to ensure security. Please enter your new password and confirm it. Once updated, you'll have full
+                        access to the application and all its features.
+                    </Text>
+                    <TouchableOpacity className="bg-[#0066A0] py-3 px-8 rounded-xl" onPress={closeModal}>
+                        <Text className="text-white text-lg font-semibold">OK, Let's Begin</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };

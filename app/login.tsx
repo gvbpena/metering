@@ -116,7 +116,7 @@ export default function LoginScreen() {
     return (
         <View className="flex-1 justify-center px-5 bg-gray-100">
             <View className="flex justify-center items-center mb-6">
-                <Image source={require("../assets/images/genius-image(smallerversion).png")} style={{ width: 80, aspectRatio: 1 }} />
+                <Image source={require("../assets/images/genius-image.png")} style={{ width: 80, aspectRatio: 1 }} />
                 <Text className="text-xl font-bold text-center text-gray-700 mt-2">Metering</Text>
             </View>
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Stack, useRouter } from "expo-router"; // ✅ Added useRouter
+import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import useProfile from "@/services/profile";
 
@@ -8,7 +8,7 @@ const PRIMARY_COLOR = "#0066A0";
 
 const ProfilePage = () => {
     const { data, confirmLogout } = useProfile();
-    const router = useRouter(); // ✅
+    const router = useRouter();
 
     const fields = [
         { icon: "person-outline" as const, title: "Name", value: data[0]?.name || "N/A" },
@@ -27,7 +27,7 @@ const ProfilePage = () => {
 
             <View className="flex-1 bg-gray-50 px-6 py-10">
                 {fields.map((field, index) => (
-                    <View key={index} className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm flex-row items-start my-2">
+                    <View key={index} className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm flex-row items-start mt-4">
                         <Ionicons name={field.icon} size={28} color="#6B7280" />
                         <View className="ml-4">
                             <Text className="text-base font-medium text-gray-600">{field.title}</Text>

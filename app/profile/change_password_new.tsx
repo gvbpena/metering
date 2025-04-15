@@ -1,4 +1,5 @@
 import useProfile from "@/services/profile";
+import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, StatusBar, ScrollView } from "react-native";
 
@@ -7,7 +8,7 @@ const ChangePasswordScreen: React.FC = () => {
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { data } = useProfile();
-
+    const router = useRouter();
     useEffect(() => {
         Alert.alert("Welcome to Genius Metering", "Your secure password update starts here.", [{ text: "OK, Let's begin", style: "default" }]);
     }, []);
@@ -52,7 +53,13 @@ const ChangePasswordScreen: React.FC = () => {
                 throw new Error(result.error || "Something went wrong.");
             }
 
-            Alert.alert("Success", result.message || "Password changed successfully!");
+            Alert.alert("Success", result.message || "Password changed successfully!", [
+                {
+                    text: "OK",
+                    onPress: () => router.replace("(electrician)" as any),
+                },
+            ]);
+
             setNewPassword("");
             setConfirmNewPassword("");
         } catch (error: any) {
@@ -72,7 +79,7 @@ const ChangePasswordScreen: React.FC = () => {
             >
                 <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                     <Text className="text-3xl font-bold text-[#0066A0] mb-8">Change Password</Text>
-                    <Text>{data[0].id}</Text>
+
                     <View className="mb-6 space-y-2">
                         <Text className="text-sm font-medium text-gray-700">New Password</Text>
                         <TextInput
@@ -86,7 +93,6 @@ const ChangePasswordScreen: React.FC = () => {
                             textContentType="newPassword"
                             editable={!isLoading}
                         />
-                        <Text className="text-xs text-gray-500 ml-1">Must be at least 8 characters long.</Text>
                     </View>
 
                     <View className="mb-8 space-y-2">

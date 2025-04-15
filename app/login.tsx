@@ -90,7 +90,7 @@ export default function LoginScreen() {
                 await authLogin(user_id, `${first_name} ${last_name}`, apiUsername, email, crew_name, org_name, role);
 
                 if (isNew === true || isNew === "true") {
-                    router.replace("/profile/change_password");
+                    router.replace("/profile/change_password_new");
                 } else {
                     switch (role) {
                         case "Electrician":

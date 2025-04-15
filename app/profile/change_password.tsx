@@ -1,40 +1,44 @@
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, StatusBar, ScrollView } from "react-native";
+import { Alert } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import useProfile from "@/services/profile";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Alert, StatusBar, ScrollView } from "react-native";
 
 const ChangePasswordScreen: React.FC = () => {
+    const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmNewPassword, setConfirmNewPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const { data } = useProfile();
     const router = useRouter();
+
     useEffect(() => {
-        Alert.alert("Welcome to Genius Metering", "Your secure password update starts here.", [{ text: "OK, Let's begin", style: "default" }]);
+        setErrorMessage("");
     }, []);
 
     const handleChangePassword = async () => {
         if (!data || !Array.isArray(data) || data.length === 0) {
-            Alert.alert("Error", "User data is not available.");
+            setErrorMessage("User data is not available.");
             return;
         }
 
-        if (!newPassword || !confirmNewPassword) {
-            Alert.alert("Error", "Please fill in all fields.");
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            setErrorMessage("Please fill in all fields.");
             return;
         }
 
         if (newPassword !== confirmNewPassword) {
-            Alert.alert("Error", "New passwords do not match.");
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            Alert.alert("Error", "New password must be at least 8 characters long.");
+            setErrorMessage("New passwords do not match.");
             return;
         }
 
         setIsLoading(true);
+        setErrorMessage("");
 
         try {
             const response = await fetch("https://genius-dev.aboitizpower.com/mygenius2/metering_api/metering_user/change_password.php", {
@@ -44,6 +48,7 @@ const ChangePasswordScreen: React.FC = () => {
                 },
                 body: JSON.stringify({
                     user_id: data[0].id,
+                    current_password: currentPassword,
                     new_password: newPassword,
                 }),
             });
@@ -53,6 +58,7 @@ const ChangePasswordScreen: React.FC = () => {
                 throw new Error(result.error || "Something went wrong.");
             }
 
+            setErrorMessage("");
             Alert.alert("Success", result.message || "Password changed successfully!", [
                 {
                     text: "OK",
@@ -60,10 +66,11 @@ const ChangePasswordScreen: React.FC = () => {
                 },
             ]);
 
+            setCurrentPassword("");
             setNewPassword("");
             setConfirmNewPassword("");
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            setErrorMessage(error.message);
         } finally {
             setIsLoading(false);
         }
@@ -81,35 +88,74 @@ const ChangePasswordScreen: React.FC = () => {
                     <Text className="text-3xl font-bold text-[#0066A0] mb-8">Change Password</Text>
 
                     <View className="mb-6 space-y-2">
+                        <Text className="text-sm font-medium text-gray-700">Current Password</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
+                                placeholder="Enter your current password"
+                                placeholderTextColor="#9CA3AF"
+                                value={currentPassword}
+                                onChangeText={setCurrentPassword}
+                                secureTextEntry={!showCurrentPassword}
+                                autoCapitalize="none"
+                                textContentType="password"
+                                editable={!isLoading}
+                            />
+                            <TouchableOpacity
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                            >
+                                <Ionicons name={showCurrentPassword ? "eye-off" : "eye"} size={24} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
+                        {errorMessage && <Text className="text-xs text-red-500 mt-1">{errorMessage}</Text>}
+                    </View>
+
+                    <View className="mb-6 space-y-2">
                         <Text className="text-sm font-medium text-gray-700">New Password</Text>
-                        <TextInput
-                            className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
-                            placeholder="Enter your new password"
-                            placeholderTextColor="#9CA3AF"
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            textContentType="newPassword"
-                            editable={!isLoading}
-                        />
-                        <Text className="text-xs text-gray-500 ml-1">Must be at least 8 characters long.</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
+                                placeholder="Enter your new password"
+                                placeholderTextColor="#9CA3AF"
+                                value={newPassword}
+                                onChangeText={setNewPassword}
+                                secureTextEntry={!showNewPassword}
+                                autoCapitalize="none"
+                                textContentType="newPassword"
+                                editable={!isLoading}
+                            />
+                            <TouchableOpacity
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                onPress={() => setShowNewPassword(!showNewPassword)}
+                            >
+                                <Ionicons name={showNewPassword ? "eye-off" : "eye"} size={24} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     <View className="mb-8 space-y-2">
                         <Text className="text-sm font-medium text-gray-700">Confirm New Password</Text>
-                        <TextInput
-                            className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
-                            placeholder="Confirm your new password"
-                            placeholderTextColor="#9CA3AF"
-                            value={confirmNewPassword}
-                            onChangeText={setConfirmNewPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            textContentType="newPassword"
-                            onSubmitEditing={handleChangePassword}
-                            editable={!isLoading}
-                        />
+                        <View className="relative">
+                            <TextInput
+                                className="w-full px-4 py-4 border border-gray-300 rounded-xl bg-white text-base text-gray-900"
+                                placeholder="Confirm your new password"
+                                placeholderTextColor="#9CA3AF"
+                                value={confirmNewPassword}
+                                onChangeText={setConfirmNewPassword}
+                                secureTextEntry={!showConfirmNewPassword}
+                                autoCapitalize="none"
+                                textContentType="newPassword"
+                                onSubmitEditing={handleChangePassword}
+                                editable={!isLoading}
+                            />
+                            <TouchableOpacity
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                            >
+                                <Ionicons name={showConfirmNewPassword ? "eye-off" : "eye"} size={24} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     <TouchableOpacity

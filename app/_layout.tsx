@@ -72,6 +72,7 @@ export default function Layout() {
                     <Stack.Screen name="(electrician)_setup" options={{ headerShown: false }} />
                     <Stack.Screen name="(electrician)_fa" options={{ headerShown: false }} />
                     <Stack.Screen name="(electrician)" options={{ headerShown: false }} />
+                    <Stack.Screen name="profile" options={{ headerShown: false }} />
                 </Stack>
             </NetworkProvider>
         </SQLiteProvider>

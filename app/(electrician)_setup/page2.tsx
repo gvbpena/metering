@@ -52,9 +52,15 @@ const Page2 = () => {
         let newErrors: { [key in keyof FormData]?: string } = {};
 
         requiredFields.forEach((field) => {
-            if (!localData[field].trim()) {
+            const value = localData[field].trim();
+            if (!value) {
                 newErrors[field] = "This field is required";
                 valid = false;
+            } else {
+                if (field === "MobileNo" && value.length < 11) {
+                    newErrors[field] = "Mobile number must be at least 11 digits";
+                    valid = false;
+                }
             }
         });
 
@@ -71,7 +77,7 @@ const Page2 = () => {
     const handleInputChange = (field: keyof FormData, value: string) => {
         setLocalData((prev) => ({ ...prev, [field]: value }));
         setErrors((prev) => ({ ...prev, [field]: "" }));
-        dispatch({ type: "SET_FORM_DATA", payload: localData });
+        dispatch({ type: "SET_FORM_DATA", payload: { ...localData, [field]: value } });
     };
 
     const handleDateChange = (_event: any, selectedDate?: Date) => {
@@ -92,7 +98,10 @@ const Page2 = () => {
                         <TextInput
                             className="border border-gray-300 rounded-xl px-5 py-5 bg-white text-lg text-gray-900"
                             value={localData[field as keyof FormData]}
-                            onChangeText={(text) => handleInputChange(field as keyof FormData, text)}
+                            onChangeText={(text) => {
+                                const lettersOnly = text.replace(/[^a-zA-Z\s-]/g, ""); // allow letters, spaces, and hyphens
+                                handleInputChange(field as keyof FormData, lettersOnly);
+                            }}
                             placeholder={`Enter ${field}`}
                             placeholderTextColor="#9CA3AF"
                             keyboardType="default"
@@ -117,6 +126,7 @@ const Page2 = () => {
                         />
                     )}
                 </View>
+
                 <View className="my-3">
                     <FormLabel field="MaritalStatus" label="Marital Status" />
                     <DropDownPicker

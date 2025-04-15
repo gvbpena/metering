@@ -14,16 +14,10 @@ const ClientAddressPage = () => {
         "StreetHouseUnitNo",
         "SitioPurokBuildingSubdivision",
         "LandMark",
-        "postal_code", // 👈 added postal code here
+        "postal_code",
     ];
 
-    const requiredFields: (keyof typeof formData)[] = [
-        "CustomerAddress",
-        "CityMunicipality",
-        "Barangay",
-        "StreetHouseUnitNo",
-        "postal_code", // 👈 required
-    ];
+    const requiredFields: (keyof typeof formData)[] = ["CustomerAddress", "CityMunicipality", "Barangay", "StreetHouseUnitNo", "postal_code"];
 
     const isFormComplete = requiredFields.every((field) => (formData[field] || "").trim() !== "");
 

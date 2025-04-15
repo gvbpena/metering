@@ -149,7 +149,7 @@ const ElectricianPage = () => {
                 isMounted.current = false;
                 isFetchingData.current = false;
             };
-        }, [fetchData, checkAndSyncOrders]) // Dependencies now include the non-memoized functions
+        }, [fetchData, checkAndSyncOrders])
     );
 
     const lowerSearchQuery = searchQuery.toLowerCase();

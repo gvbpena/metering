@@ -68,7 +68,10 @@ export const useTransferMAData = () => {
 
     const getUnsyncedMAData = async (): Promise<MeteringApplicationRecord[]> => {
         try {
-            return await db.getAllAsync<MeteringApplicationRecord>("SELECT * FROM metering_application WHERE sync_status = ?", ["Unsynced"]);
+            return await db.getAllAsync<MeteringApplicationRecord>("SELECT * FROM metering_application WHERE sync_status = ? AND status = ?", [
+                "Unsynced",
+                "Endorsed",
+            ]);
         } catch {
             return [];
         }

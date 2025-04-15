@@ -26,10 +26,10 @@ const Index = () => {
                         setRedirectPath("/(contractor)");
                         break;
                     case "Power":
-                        setRedirectPath("/(home)");
+                        setRedirectPath("/(electrician)");
                         break;
                     default:
-                        setRedirectPath("/login"); // Default to login if the role is unrecognized
+                        setRedirectPath("/login");
                         break;
                 }
             } else {

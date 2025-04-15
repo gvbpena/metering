@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Image, Pressable, ActivityIndicator, Text } from "react-native";
+import { View, TextInput, Image, Pressable, ActivityIndicator, Text, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSQLiteContext } from "expo-sqlite";
@@ -114,54 +114,52 @@ export default function LoginScreen() {
     };
 
     return (
-        <View className="flex-1 justify-center px-5 bg-gray-100">
-            <View className="flex justify-center items-center mb-6">
-                <Image source={require("../assets/images/genius-image.png")} style={{ width: 80, aspectRatio: 1 }} />
-                <Text className="text-xl font-bold text-center text-gray-700 mt-2">Metering</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-gray-50 justify-center px-6">
+            <View className="items-center mb-8">
+                <Image source={require("../assets/images/genius-image.png")} style={{ width: 160, height: 160, resizeMode: "contain" }} />
+                <Text className="text-2xl font-semibold text-gray-900 mt-3">Metering</Text>
             </View>
 
-            <View className="mb-3 flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-300">
-                <Icon name="account" size={24} color="gray" className="mr-4" />
+            <View className="mb-4 bg-white border border-gray-200 rounded-xl flex-row items-center px-4 py-3 shadow-sm">
+                <Icon name="account" size={22} color="gray" />
                 <TextInput
                     placeholder="Username"
+                    placeholderTextColor="#A0A0A0"
+                    className="ml-3 flex-1 text-base text-gray-900"
+                    autoCapitalize="none"
                     value={username}
                     onChangeText={setUsername}
-                    className="flex-1 text-gray-800 text-base"
-                    placeholderTextColor="gray"
-                    autoCapitalize="none"
                 />
             </View>
 
-            <View className="mb-3 flex-row items-center bg-white rounded-lg px-4 py-3 border border-gray-300">
-                <Icon name="lock" size={24} color="gray" className="mr-4" />
+            <View className="mb-4 bg-white border border-gray-200 rounded-xl flex-row items-center px-4 py-3 shadow-sm">
+                <Icon name="lock" size={22} color="gray" />
                 <TextInput
                     placeholder="Password"
+                    placeholderTextColor="#A0A0A0"
+                    className="ml-3 flex-1 text-base text-gray-900"
+                    secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    className="flex-1 text-gray-800 text-base"
-                    placeholderTextColor="gray"
                 />
-                <Pressable onPress={() => setShowPassword((prev) => !prev)} className="ml-4">
-                    <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
+                <Pressable onPress={() => setShowPassword((prev) => !prev)}>
+                    <Icon name={showPassword ? "eye-off" : "eye"} size={22} color="gray" />
                 </Pressable>
             </View>
 
-            {error ? <Text className="text-red-600 mb-4 text-center">{error}</Text> : null}
+            {error ? <Text className="text-red-500 text-center mb-3">{error}</Text> : null}
 
-            {loading ? (
-                <Pressable className="bg-[#0066A0] rounded-xl py-4 mb-4 flex justify-center items-center opacity-70" disabled>
-                    <ActivityIndicator size="small" color="#fff" />
-                </Pressable>
-            ) : (
-                <Pressable className="bg-[#0066A0] rounded-xl py-4 mb-4 flex justify-center items-center" onPress={handleLogin} disabled={isLoadingIdentifier}>
-                    <Text className="text-white text-lg font-semibold">Login</Text>
-                </Pressable>
-            )}
+            <Pressable
+                onPress={handleLogin}
+                disabled={loading || isLoadingIdentifier}
+                className={`rounded-xl py-4 mb-6 flex items-center justify-center ${loading || isLoadingIdentifier ? "bg-gray-300" : "bg-[#0066A0]"}`}
+            >
+                {loading ? <ActivityIndicator color="#fff" /> : <Text className="text-white font-semibold text-base">Login</Text>}
+            </Pressable>
 
             <Text className="mt-1 text-center text-gray-500 text-sm">
                 ©{new Date().getFullYear()} • All rights reserved •{"\n"} Powered by Genius
             </Text>
-        </View>
+        </KeyboardAvoidingView>
     );
 }

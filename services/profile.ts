@@ -134,6 +134,7 @@ const useProfile = () => {
         handleDownloadWorkOrders,
         confirmLogout,
         getModelName,
+        handleLogout,
     };
 };
 

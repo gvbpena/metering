@@ -4,7 +4,7 @@
         "slug": "metering",
         "version": "1.0.3",
         "orientation": "portrait",
-        "icon": "./assets/images/genius-image.png",
+        "icon": "./assets/images/genius-image(icon).png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,

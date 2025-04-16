@@ -85,7 +85,7 @@ const NetworkStatusTitle = () => {
     return (
         <View className="flex-row items-center">
             <Image source={require("@/assets/images/genius-image.png")} className="w-12 h-12" resizeMode="contain" />
-            <Text className="text-2xl font-extrabold text-black">Metering</Text>
+            <Text className="text-2xl font-extrabold text-black">Genius Electrician Tool</Text>
             <Text className="text-sm text-gray-500 ml-2">v{version}</Text>
             {updateStatus === "Checking..." ? (
                 <ActivityIndicator size="small" color="#666" style={{ marginLeft: 8 }} />

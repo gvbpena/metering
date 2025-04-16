@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import { useDeleteData } from "@/context/delete_application"; // <-- Adjust the path as needed
 
 interface MeteringApplication {
     id: number;
@@ -200,6 +201,7 @@ const DetailsScreen = () => {
     const [selectedRow, setSelectedRow] = useState<MeteringApplication | null>(null);
     const [imagesByType, setImagesByType] = useState<ImageData>({});
     const { moveAndSaveImages, deleteImageFromDatabase, updateApplicationData, endorsedApplication } = useSubmitSetupData();
+    const { deleteApplicationData } = useDeleteData();
     const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [permitNumber, setPermitNumber] = useState<string>("");
@@ -440,6 +442,35 @@ const DetailsScreen = () => {
         });
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setSelectedImages((prev) => ({ ...prev, [category]: [...(prev[category] || []), ...result.assets.map((asset) => asset.uri)] }));
+        }
+    };
+    const handleDelete = async () => {
+        const applicationId = selectedRow?.application_id;
+        if (!applicationId) {
+            Alert.alert("Error", "Cannot delete: Application ID is missing.");
+            console.error("Delete failed: application_id is missing from selectedRow", selectedRow);
+            return;
+        }
+
+        console.log("Attempting to delete application with ID:", applicationId);
+
+        try {
+            await deleteApplicationData(applicationId);
+            Alert.alert("Success", "Application deleted successfully.", [
+                {
+                    text: "OK",
+                    onPress: () => router.back(),
+                },
+            ]);
+        } catch (error: unknown) {
+            console.error("Failed to delete application:", error);
+
+            let errorMessage = "Unknown error";
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            Alert.alert("Error", `Failed to delete application: ${errorMessage}`);
         }
     };
 
@@ -934,6 +965,35 @@ const DetailsScreen = () => {
                             )}
                         </View>
                     ))}
+                    {(selectedRow?.status?.toLowerCase() === "approved" || selectedRow?.status?.toLowerCase() === "pending") && (
+                        <View className="mt-2 mb-2">
+                            <TouchableOpacity
+                                onPress={() =>
+                                    Alert.alert(
+                                        "Confirm Delete",
+                                        "Are you sure you want to delete this application?",
+                                        [
+                                            {
+                                                text: "Cancel",
+                                                onPress: () => console.log("Delete cancelled"),
+                                                style: "cancel",
+                                            },
+                                            {
+                                                text: "Delete",
+                                                onPress: handleDelete,
+                                                style: "destructive",
+                                            },
+                                        ],
+                                        { cancelable: true }
+                                    )
+                                }
+                                className="bg-red-600 flex-row items-center justify-center py-3 px-4 rounded-lg shadow-md"
+                            >
+                                <Ionicons name="trash-outline" size={20} color="white" className="mr-2" />
+                                <Text className="text-white text-lg font-semibold">Delete Application</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
             <Modal

@@ -116,7 +116,7 @@ export default function LoginScreen() {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-gray-50 justify-center px-6">
             <View className="items-center mb-8">
-                <Image source={require("../assets/images/genius-image.png")} style={{ width: 160, height: 160, resizeMode: "contain" }} />
+                <Image source={require("../assets/images/get-logov3.png")} style={{ width: 160, height: 160, resizeMode: "contain" }} />
                 <Text className="text-2xl font-semibold text-gray-900 mt-3">Genius Electrician Tool</Text>
             </View>
 

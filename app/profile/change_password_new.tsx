@@ -158,7 +158,7 @@ const ChangePasswordScreen: React.FC = () => {
                 style={{ justifyContent: "center", alignItems: "center", margin: 0 }}
             >
                 <View className="bg-white p-8 rounded-xl shadow-lg w-3/4">
-                    <Text className="text-3xl font-semibold text-[#0066A0] mb-6">Welcome to Metering Application</Text>
+                    <Text className="text-3xl font-semibold text-[#0066A0] mb-6">Welcome to Genius Electrician Tool</Text>
                     <Text className="text-lg text-gray-600 mb-8">
                         You need to change your password to ensure security. Please enter your new password and confirm it. Once updated, you'll have full
                         access to the application and all its features.

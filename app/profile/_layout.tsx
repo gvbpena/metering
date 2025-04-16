@@ -6,7 +6,7 @@ export default function RootLayout() {
             <Stack.Screen
                 name="change_password_new"
                 options={{
-                    title: "Metering Application",
+                    title: "Genius Electrician Tool",
                     headerShown: true,
                     headerBackVisible: false,
                     headerLeft: () => null,

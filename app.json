@@ -1,38 +1,38 @@
 {
     "expo": {
-        "name": "metering",
+        "name": "GET",
         "slug": "metering",
         "version": "1.0.4",
         "orientation": "portrait",
-        "icon": "./assets/images/genius-image(icon).png",
+        "icon": "./assets/images/get-logov3(icon).png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "ios": {
             "supportsTablet": true,
-            "bundleIdentifier": "com.gvbpena.metering",
+            "bundleIdentifier": "com.gvbpena.get",
             "infoPlist": {
                 "ITSAppUsesNonExemptEncryption": false
             }
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/images/genius-image(icon).png",
+                "foregroundImage": "./assets/images/get-logov3(icon).png",
                 "backgroundColor": "#ffffff"
             },
-            "package": "com.gvbpena.metering"
+            "package": "com.gvbpena.get"
         },
         "web": {
             "bundler": "metro",
             "output": "static",
-            "favicon": "./assets/images/genius-image.png"
+            "favicon": "./assets/images/get-logov3.png"
         },
         "plugins": [
             "expo-router",
             [
                 "expo-splash-screen",
                 {
-                    "image": "./assets/images/genius-image.png",
+                    "image": "./assets/images/get-logov3.png",
                     "imageWidth": 200,
                     "resizeMode": "contain",
                     "backgroundColor": "#ffffff"
@@ -56,6 +56,7 @@
         },
         "updates": {
             "url": "https://u.expo.dev/650801fb-243c-4aad-8a55-2739469d0ba0"
-        }
+        },
+        "owner": "gvbpena"
     }
 }

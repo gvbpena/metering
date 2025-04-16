@@ -1,5 +1,5 @@
 {
-    "name": "metering",
+    "name": "get",
     "main": "expo-router/entry",
     "version": "1.0.4",
     "scripts": {

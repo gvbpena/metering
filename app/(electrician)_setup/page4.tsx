@@ -40,9 +40,8 @@ const ParentsDetailsPage: React.FC = () => {
         });
 
     const handleInputChange = (field: keyof typeof formData, value: string) => {
-        // Apply letter-only filter for name fields
         if (field.includes("FirstName") || field.includes("MiddleName") || field.includes("LastName")) {
-            const lettersOnly = value.replace(/[^a-zA-Z ]/g, ""); // allow spaces too
+            const lettersOnly = value.replace(/[^a-zA-Z ]/g, "");
             dispatch({ type: "SET_INPUT_FIELD", field, payload: lettersOnly });
         } else {
             dispatch({ type: "SET_INPUT_FIELD", field, payload: value });

@@ -2,9 +2,9 @@
     "expo": {
         "name": "GET",
         "slug": "metering",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "orientation": "portrait",
-        "icon": "./assets/images/get-logov3(icon).png",
+        "icon": "./assets/images/get-logov3(logo).png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
@@ -17,7 +17,7 @@
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/images/get-logov3(icon).png",
+                "foregroundImage": "./assets/images/get-logov3(logo).png",
                 "backgroundColor": "#ffffff"
             },
             "package": "com.gvbpena.get"

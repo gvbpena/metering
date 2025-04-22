@@ -655,7 +655,7 @@ const DetailsScreen = () => {
                         ? undefined
                         : hasSelectedImages
                         ? "Save"
-                        : "Endorsed"
+                        : "Endorse"
                 }
                 onNext={
                     selectedRow?.status?.toLowerCase() === "approved" || selectedRow?.status?.toLowerCase() === "endorsed"

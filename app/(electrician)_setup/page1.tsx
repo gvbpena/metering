@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import StackScreen from "./_stackscreen";
 
-// --- Existing Constants ---
+// Constants remain the same
 export const ClientType = ["New", "Existing"];
 export const NewClientOptions = ["PERMANENT", "SEPARATION OF METER", "TEMPORARY", "TFC"];
 export const ExistingClientOptions = ["CHANGE NAME", "DOWNGRADE LOAD", "RE-CON & CHANGE NAME", "RE-CONNECTION", "TLM", "UPGRADE LOAD"];
@@ -12,6 +12,34 @@ export const ClassType = ["GOVERNMENT", "NON-RESIDENTIAL", "RESIDENTIAL"];
 export const CustomerType = ["Business", "Person"];
 export const BusinessType = ["COOPERATIVE", "CORPORATION", "MARKET STALL", "PARTNERSHIP", "SOLE PROPRIETORSHIP"];
 export const PersonPropertyType = ["AUTHORIZED OCCUPANT", "OWNED", "PURCHASED", "RENTED", "URBAN POOR"];
+export const GovernmentCategory = ["Local", "National"];
+export const LocalGovernmentOptions = [
+    /* ...options */ "BARANGAY HALL",
+    "HEALTH CENTER",
+    "HOSPITAL",
+    "MARKET",
+    "OFFICE",
+    "PROVINCIAL OFFICE",
+    "SCHOOL",
+    "SPECIAL EVENT",
+    "STREET LIGHT",
+    "TRAFFIC LIGHT",
+    "UTILITY",
+];
+export const NationalGovernmentOptions = [
+    /* ...options */ "ARMED FORCES",
+    "BARANGAY HALL",
+    "EMERGENCY",
+    "HEALTH CENTER",
+    "HOSPITAL",
+    "LEGAL",
+    "MARKET",
+    "OFFICE",
+    "SCHOOL",
+    "SPECIAL EVENT",
+    "STREET LIGHT",
+    "TRAFFIC LIGHT",
+];
 
 const clientTypes = [
     { id: "new", name: "New", icon: "account-plus" },
@@ -34,43 +62,13 @@ const propertyIcons: Record<string, string> = {
     "URBAN POOR": "city",
 };
 
-// --- New Constants for Government Sub-Types ---
-export const GovernmentCategory = ["Local", "National"];
-export const LocalGovernmentOptions = [
-    "BARANGAY HALL",
-    "HEALTH CENTER",
-    "HOSPITAL",
-    "MARKET",
-    "OFFICE",
-    "PROVINCIAL OFFICE",
-    "SCHOOL",
-    "SPECIAL EVENT",
-    "STREET LIGHT",
-    "TRAFFIC LIGHT",
-    "UTILITY",
-];
-export const NationalGovernmentOptions = [
-    "ARMED FORCES",
-    "BARANGAY HALL",
-    "EMERGENCY",
-    "HEALTH CENTER",
-    "HOSPITAL",
-    "LEGAL",
-    "MARKET",
-    "OFFICE",
-    "SCHOOL",
-    "SPECIAL EVENT",
-    "STREET LIGHT",
-    "TRAFFIC LIGHT",
-];
-
 const ClientInformation = () => {
     const { formData, dispatch } = useFormData();
     const [selectedClientType, setSelectedClientType] = useState<string | null>(formData.ClientType ?? null);
     const [selectedApplicationType, setSelectedApplicationType] = useState<string | null>(formData.ApplicationType ?? null);
     const [selectedClassType, setSelectedClassType] = useState<string | null>(formData.ClassType ?? null);
     const [selectedCustomerType, setSelectedCustomerType] = useState<string | null>(formData.CustomerType ?? null);
-    // Note: This state holds either BusinessType or PersonPropertyType based on CustomerType selection
+    // This state holds either BusinessType or PersonPropertyType
     const [selectedPropertyType, setSelectedPropertyType] = useState<string | null>(formData.BusinessType ?? null);
     const [clientOptions, setClientOptions] = useState<string[]>([]);
     const [selectedGovernmentCategory, setSelectedGovernmentCategory] = useState<string | null>(formData.GovernmentCategory ?? null);
@@ -78,13 +76,17 @@ const ClientInformation = () => {
     const [governmentSubOptions, setGovernmentSubOptions] = useState<string[]>([]);
 
     const handleSelection = <T extends keyof FormData>(field: T, value: FormData[T]) => {
-        dispatch({ type: "SET_INPUT_FIELD", field, payload: value ?? null }); // Use null instead of "" for consistency
+        dispatch({ type: "SET_INPUT_FIELD", field, payload: value ?? null });
     };
+
+    // --- Effects for handling selections and resetting dependent fields ---
     useEffect(() => {
         setClientOptions(selectedClientType === "New" ? NewClientOptions : ExistingClientOptions);
-        // Reset subsequent dependent fields when ClientType changes
-        setSelectedApplicationType(null);
-        handleSelection("ApplicationType", null);
+        // Reset dependent fields only if the selection actually changes from a non-null value
+        if (formData.ClientType !== selectedClientType) {
+            setSelectedApplicationType(null);
+            handleSelection("ApplicationType", null);
+        }
         handleSelection("ClientType", selectedClientType as FormData["ClientType"]);
     }, [selectedClientType]);
 
@@ -93,55 +95,77 @@ const ClientInformation = () => {
     }, [selectedApplicationType]);
 
     useEffect(() => {
-        handleSelection("ClassType", selectedClassType as FormData["ClassType"]);
-        // Reset government-specific fields if ClassType is not GOVERNMENT
-        if (selectedClassType !== "GOVERNMENT") {
+        // Reset government fields only if ClassType changes *and* is not GOVERNMENT
+        if (formData.ClassType !== selectedClassType && selectedClassType !== "GOVERNMENT") {
             setSelectedGovernmentCategory(null);
             setSelectedGovernmentSubType(null);
+            setGovernmentSubOptions([]);
             handleSelection("GovernmentCategory", null);
             handleSelection("GovernmentSubType", null);
         }
+        handleSelection("ClassType", selectedClassType as FormData["ClassType"]);
     }, [selectedClassType]);
 
     useEffect(() => {
+        // Reset property/business type only if the selection actually changes
+        if (formData.CustomerType !== selectedCustomerType) {
+            setSelectedPropertyType(null);
+            handleSelection("BusinessType", null); // Assuming this clears both business/person property
+        }
         handleSelection("CustomerType", selectedCustomerType as FormData["CustomerType"]);
-        // Reset the Business/Property field when CustomerType changes
-        setSelectedPropertyType(null);
-        handleSelection("BusinessType", null); // Assuming BusinessType field stores both business and person property types
     }, [selectedCustomerType]);
 
     useEffect(() => {
-        // This updates the 'BusinessType' field in formData regardless of whether it's a Business or Person customer type.
-        // Consider creating a separate field like 'PersonPropertyType' in FormData if needed.
         handleSelection("BusinessType", selectedPropertyType as FormData["BusinessType"]);
     }, [selectedPropertyType]);
 
-    // --- New useEffect Hooks for Government ---
+    // Effects for Government selections
     useEffect(() => {
-        handleSelection("GovernmentCategory", selectedGovernmentCategory as FormData["GovernmentCategory"]);
-        // Update sub-options based on category and reset sub-type selection
-        if (selectedGovernmentCategory === "Local") {
-            setGovernmentSubOptions(LocalGovernmentOptions);
-        } else if (selectedGovernmentCategory === "National") {
-            setGovernmentSubOptions(NationalGovernmentOptions);
-        } else {
-            setGovernmentSubOptions([]);
+        // Reset sub-type only if the category changes
+        if (formData.GovernmentCategory !== selectedGovernmentCategory) {
+            if (selectedGovernmentCategory === "Local") {
+                setGovernmentSubOptions(LocalGovernmentOptions);
+            } else if (selectedGovernmentCategory === "National") {
+                setGovernmentSubOptions(NationalGovernmentOptions);
+            } else {
+                setGovernmentSubOptions([]);
+            }
+            setSelectedGovernmentSubType(null);
+            handleSelection("GovernmentSubType", null);
         }
-        setSelectedGovernmentSubType(null); // Reset sub-type when category changes
-        handleSelection("GovernmentSubType", null);
+        handleSelection("GovernmentCategory", selectedGovernmentCategory as FormData["GovernmentCategory"]);
     }, [selectedGovernmentCategory]);
 
     useEffect(() => {
         handleSelection("GovernmentSubType", selectedGovernmentSubType as FormData["GovernmentSubType"]);
     }, [selectedGovernmentSubType]);
 
+    // --- Validation Function ---
+    const isFormComplete = (): boolean => {
+        if (!selectedClientType) return false;
+        if (!selectedApplicationType) return false;
+        if (!selectedClassType) return false;
+
+        if (selectedClassType === "GOVERNMENT") {
+            if (!selectedGovernmentCategory) return false;
+            if (!selectedGovernmentSubType) return false;
+        }
+
+        if (!selectedCustomerType) return false;
+        // selectedPropertyType covers both Business and Person scenarios
+        if (!selectedPropertyType) return false;
+
+        return true; // All required fields are filled
+    };
+
     return (
         <>
+            {/* Pass the validation function to StackScreen */}
             <StackScreen
                 title="Customer Information"
                 nextRoute="/(electrician)_setup/page2"
                 nextLabel="Next"
-                onNext={() => true} // Pass a function returning true
+                onNext={isFormComplete} // Use the validation function here
             />
 
             <ScrollView className="flex-1 p-2 pb-14 bg-gray-50">
@@ -220,7 +244,7 @@ const ClientInformation = () => {
                     ))}
                 </View>
 
-                {/* --- Conditional Government Type Selection --- */}
+                {/* Conditional Government Type Selection */}
                 {selectedClassType === "GOVERNMENT" && (
                     <>
                         {/* Government Category Selection */}
@@ -235,7 +259,7 @@ const ClientInformation = () => {
                                     } flex items-center justify-center`}
                                 >
                                     <MaterialCommunityIcons
-                                        name={category === "Local" ? "map-marker-outline" : "earth"} // Example icons
+                                        name={category === "Local" ? "map-marker-outline" : "earth"}
                                         size={24}
                                         color={selectedGovernmentCategory === category ? "#0066A0" : "gray"}
                                     />
@@ -250,7 +274,7 @@ const ClientInformation = () => {
                             ))}
                         </View>
 
-                        {/* Government Sub-Type Selection (conditional on category selection) */}
+                        {/* Government Sub-Type Selection */}
                         {selectedGovernmentCategory && (
                             <>
                                 <Text className="text-gray-700 mb-2 mt-4 text-lg font-medium">Government Sub-Type</Text>
@@ -263,7 +287,6 @@ const ClientInformation = () => {
                                                 selectedGovernmentSubType === subType ? "border-[#0066A0] bg-blue-50" : "border-gray-300 bg-white"
                                             } flex items-center justify-center`}
                                         >
-                                            {/* Using a generic icon, adjust if needed */}
                                             <MaterialCommunityIcons
                                                 name="office-building-marker-outline"
                                                 size={24}
@@ -283,7 +306,6 @@ const ClientInformation = () => {
                         )}
                     </>
                 )}
-                {/* --- End Conditional Government --- */}
 
                 {/* Customer Type Selection */}
                 <Text className="text-gray-700 mb-2 mt-4 text-lg font-medium">Customer Type</Text>
@@ -316,7 +338,7 @@ const ClientInformation = () => {
                             {BusinessType.map((type) => (
                                 <TouchableOpacity
                                     key={type}
-                                    onPress={() => setSelectedPropertyType(type)} // Updates selectedPropertyType state
+                                    onPress={() => setSelectedPropertyType(type)}
                                     className={`w-[48%] mb-2 p-2 rounded-lg border ${
                                         selectedPropertyType === type ? "border-[#0066A0] bg-blue-50" : "border-gray-300 bg-white"
                                     } flex items-center justify-center`}
@@ -347,7 +369,7 @@ const ClientInformation = () => {
                             {PersonPropertyType.map((type) => (
                                 <TouchableOpacity
                                     key={type}
-                                    onPress={() => setSelectedPropertyType(type)} // Updates selectedPropertyType state
+                                    onPress={() => setSelectedPropertyType(type)}
                                     className={`w-[48%] mb-2 p-2 rounded-lg border ${
                                         selectedPropertyType === type ? "border-[#0066A0] bg-blue-50" : "border-gray-300 bg-white"
                                     } flex items-center justify-center`}

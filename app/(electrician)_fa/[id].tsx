@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
-import { useDeleteData } from "@/context/delete_application"; // <-- Adjust the path as needed
+import { useDeleteData } from "@/context/delete_application";
 
 interface MeteringApplication {
     id: number;
@@ -141,7 +141,6 @@ export const fieldLabels: Record<string, string> = {
     businesstype: "Business Type",
     status: "Status",
     remarks: "Remarks",
-
     firstname: "First Name",
     middlename: "Middle Name",
     lastname: "Last Name",
@@ -154,14 +153,12 @@ export const fieldLabels: Record<string, string> = {
     tin: "TIN",
     typeofid: "Type of ID",
     idno: "ID No.",
-
     fatherfirstname: "Father First Name",
     fathermiddlename: "Father Middle Name",
     fatherlastname: "Father Last Name",
     motherfirstname: "Mother First Name",
     mothermiddlename: "Mother Middle Name",
     motherlastname: "Mother Last Name",
-
     representativefirstname: "Representative First Name",
     representativemiddlename: "Representative Middle Name",
     representativelastname: "Representative Last Name",
@@ -170,13 +167,11 @@ export const fieldLabels: Record<string, string> = {
     representativeemail: "Representative Email",
     representativeattachedid: "Representative Attached ID",
     representativespecialpowerofattorney: "Representative Special Power of Attorney",
-
     customeraddress: "Customer Address",
     citymunicipality: "City/Municipality",
     barangay: "Barangay",
     streethouseunitno: "Street/House/Unit No.",
     sitiopurokbuildingsubdivision: "Sitio/Purok/Building/Subdivision",
-
     reference_pole: "Tapping Pole",
     nearmeterno: "Near Meter No.",
     pole_latitude: "Pole Latitude",
@@ -185,7 +180,6 @@ export const fieldLabels: Record<string, string> = {
     meter_longitude: "Meter Longitude",
     premise_latitude: "Premise Latitude",
     premise_longitude: "Premise Longitude",
-
     traversingwire: "Traversing Wires",
     electricalpermitnumber: "Electrical Permit Number",
     permiteffectivedate: "Permit Effective Date",
@@ -211,7 +205,6 @@ const DetailsScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalImageUri, setModalImageUri] = useState<string | null>(null);
     const [hasSelectedImages, setHasSelectedImages] = useState(false);
-
     const [meterLocation, setMeterLocation] = useState<LocationCoords | null>(null);
     const [premiseLocation, setPremiseLocation] = useState<LocationCoords | null>(null);
     const [poleLocation, setPoleLocation] = useState<LocationCoords | null>(null);
@@ -231,7 +224,6 @@ const DetailsScreen = () => {
             latitude: currentLocation.coords.latitude,
             longitude: currentLocation.coords.longitude,
         };
-
         if (type === "Meterbase") {
             setMeterLocation(newLocation);
         } else if (type === "Premises") {
@@ -244,30 +236,27 @@ const DetailsScreen = () => {
 
     const fetchData = useCallback(async () => {
         if (!id) return;
-
         const query = `
-                        SELECT
-                            ma.*,
-                            i.image_type,
-                            GROUP_CONCAT(i.image_url) AS image_urls
-                        FROM
-                            metering_application ma
-                        LEFT JOIN
-                            images i
-                        ON
-                            ma.application_id = i.reference_id
-                        WHERE
-                            ma.application_id = ?
-                        GROUP BY
-                            i.image_type;
-                    `;
-
+                    SELECT
+                        ma.*,
+                        i.image_type,
+                        GROUP_CONCAT(i.image_url) AS image_urls
+                    FROM
+                        metering_application ma
+                    LEFT JOIN
+                        images i
+                    ON
+                        ma.application_id = i.reference_id
+                    WHERE
+                        ma.application_id = ?
+                    GROUP BY
+                        i.image_type;
+                `;
         try {
             const result: any[] = await database.getAllAsync(query, [id]);
             if (result.length > 0) {
                 const firstRow = result.find((row) => row.application_id);
                 const meteringApplication = firstRow ? { ...(firstRow as MeteringApplication) } : null;
-
                 if (!meteringApplication) {
                     const singleAppQuery = `SELECT * FROM metering_application WHERE application_id = ?`;
                     const appResult: any = await database.getFirstAsync(singleAppQuery, [id]);
@@ -312,6 +301,7 @@ const DetailsScreen = () => {
             fetchData();
         }, [fetchData])
     );
+
     const captureButtons = useMemo(() => {
         const baseButtons = [
             { label: "Meterbase" },
@@ -320,19 +310,16 @@ const DetailsScreen = () => {
             { label: "Proof of Ownership" },
             { label: "Identity Card" },
             { label: "Premises" },
+            { label: "Selfie w/ Premise" },
             { label: "Signature" },
             { label: "Attach Document" },
-            // SPA is added conditionally below
         ];
-
-        // Check if selectedRow has data and if has_representative is 'Yes'
-        // Using optional chaining (?.) and toLowerCase() for robustness
         if (selectedRow?.has_representative?.toLowerCase() === "yes") {
             baseButtons.push({ label: "SPA" });
         }
-
         return baseButtons;
-    }, [selectedRow]); // Recalculate only when selectedRow changes
+    }, [selectedRow]);
+
     useEffect(() => {
         const checkHasSelected = () => {
             const hasAnySelected = Object.values(selectedImages).some((uris) => uris.length > 0);
@@ -348,7 +335,8 @@ const DetailsScreen = () => {
         if (!selectedRow || (selectedRow.status.toLowerCase() !== "pending" && selectedRow.status.toLowerCase() !== "rejected")) {
             return false;
         }
-        const requiredImageTypes = captureButtons.map((btn) => btn.label);
+        const allPotentialTypes = captureButtons.map((btn) => btn.label);
+        const requiredImageTypes = allPotentialTypes.filter((type) => type !== "Attach Document");
         return requiredImageTypes.every((type) => imagesByType[type]?.length > 0);
     }, [imagesByType, selectedRow, captureButtons]);
 
@@ -366,7 +354,6 @@ const DetailsScreen = () => {
                 copyToCacheDirectory: true,
                 multiple: true,
             });
-
             if (!result.canceled && result.assets && result.assets.length > 0) {
                 const uris = result.assets.map((asset) => asset.uri);
                 setSelectedImages((prev) => ({
@@ -389,7 +376,6 @@ const DetailsScreen = () => {
             router.push("/consent" as any);
             return;
         }
-
         if (category === "Attach Document") {
             launchDocumentPicker(category);
             return;
@@ -399,8 +385,7 @@ const DetailsScreen = () => {
             { text: "Cancel", style: "cancel" },
             { text: "Take Photo", onPress: () => launchCamera(category) },
         ];
-
-        if (!["Meterbase", "Premises", "Pole Images"].includes(category)) {
+        if (!["Meterbase", "Premises", "Pole Images", "Selfie w/ Premise"].includes(category)) {
             options.push({ text: "Choose from Gallery", onPress: () => launchImageLibrary(category) });
         }
 
@@ -413,7 +398,6 @@ const DetailsScreen = () => {
             Alert.alert("Permission required", "Permission to access camera is required!");
             return;
         }
-
         const result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
         if (!result.canceled && result.assets && result.assets.length > 0) {
             if (category === "Premises") {
@@ -444,6 +428,7 @@ const DetailsScreen = () => {
             setSelectedImages((prev) => ({ ...prev, [category]: [...(prev[category] || []), ...result.assets.map((asset) => asset.uri)] }));
         }
     };
+
     const handleDelete = async () => {
         const applicationId = selectedRow?.application_id;
         if (!applicationId) {
@@ -451,9 +436,7 @@ const DetailsScreen = () => {
             console.error("Delete failed: application_id is missing from selectedRow", selectedRow);
             return;
         }
-
         console.log("Attempting to delete application with ID:", applicationId);
-
         try {
             await deleteApplicationData(applicationId);
             Alert.alert("Success", "Application deleted successfully.", [
@@ -464,12 +447,10 @@ const DetailsScreen = () => {
             ]);
         } catch (error: unknown) {
             console.error("Failed to delete application:", error);
-
             let errorMessage = "Unknown error";
             if (error instanceof Error) {
                 errorMessage = error.message;
             }
-
             Alert.alert("Error", `Failed to delete application: ${errorMessage}`);
         }
     };
@@ -477,11 +458,9 @@ const DetailsScreen = () => {
     const handleDeleteImage = async (category: string, uri: string) => {
         try {
             await deleteImageFromDatabase(uri);
-
             if (category === "Signature") {
                 await AsyncStorage.removeItem("userSignature");
             }
-
             await fetchData();
             Alert.alert("Deleted", "Image deleted successfully.");
         } catch (error) {
@@ -512,9 +491,7 @@ const DetailsScreen = () => {
             Alert.alert("Error", "Application ID is missing.");
             return;
         }
-
         setLoading(true);
-
         try {
             const hasDataToUpdate =
                 selectedDate ||
@@ -540,13 +517,11 @@ const DetailsScreen = () => {
                     poleLocation?.latitude?.toString(),
                     poleLocation?.longitude?.toString()
                 );
-
                 for (const category of Object.keys(selectedImages)) {
                     if (selectedImages[category] && selectedImages[category].length > 0) {
                         await moveAndSaveImages(selectedImages[category], id, category);
                     }
                 }
-
                 setSelectedImages({});
                 setMeterLocation(null);
                 setPremiseLocation(null);
@@ -555,9 +530,7 @@ const DetailsScreen = () => {
                 setPermitNumber("");
                 setSelectedIdType("");
                 setIdNumber("");
-
                 await fetchData();
-
                 Alert.alert("Success", "Data and images saved successfully!");
             } else {
                 Alert.alert("No Changes", "No new data or images to save.");
@@ -610,6 +583,7 @@ const DetailsScreen = () => {
             },
         });
     };
+
     const IdTypes = [
         "Social Security (SS) card",
         "Unified Multi-Purpose ID (UMID) card",
@@ -678,12 +652,10 @@ const DetailsScreen = () => {
                     ) {
                         return null;
                     }
-
                     return (
                         <View key={section.title} className="bg-white border border-gray-300 rounded-lg shadow-md mb-4 p-4 relative">
                             <View className="flex-row items-center justify-between p-2 rounded-lg mb-2">
                                 <Text className="text-xl font-semibold text-gray-700 flex-1 flex-wrap">{section.title}</Text>
-
                                 {section.title !== "Remarks" &&
                                     !isReadOnly &&
                                     (selectedRow.status.toLowerCase() === "rejected" || selectedRow.status.toLowerCase() === "pending") && (
@@ -701,13 +673,10 @@ const DetailsScreen = () => {
                                         </TouchableOpacity>
                                     )}
                             </View>
-
                             {section.fields.map((field) => {
                                 const rawValue = selectedRow[field as keyof MeteringApplication] ?? "N/A";
                                 const value = String(rawValue);
-
                                 let badgeStyles = "bg-gray-100 text-gray-700";
-
                                 if (section.title === "Client Information" && field === "status") {
                                     switch (value.toLowerCase()) {
                                         case "pending":
@@ -724,7 +693,6 @@ const DetailsScreen = () => {
                                             break;
                                     }
                                 }
-
                                 return (
                                     <View key={field} className="flex-row justify-between py-1 items-center px-2">
                                         {field !== "remarks" && <Text className="text-lg text-gray-600 font-medium flex-1">{fieldLabels[field] || field}</Text>}
@@ -741,7 +709,6 @@ const DetailsScreen = () => {
                         </View>
                     );
                 })}
-
                 <View className="space-y-3 mb-6">
                     {captureButtons.map((item) => (
                         <View key={item.label} className="bg-white border border-gray-300 rounded-lg shadow-md p-4 mb-2">
@@ -765,7 +732,6 @@ const DetailsScreen = () => {
                                     </TouchableOpacity>
                                 )}
                             </View>
-
                             {!isReadOnly && item.label === "Premises" && (
                                 <View className="flex flex-row items-center mt-2">
                                     {locationLoading.Premises && (
@@ -782,7 +748,6 @@ const DetailsScreen = () => {
                                     {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
                                 </View>
                             )}
-
                             {!isReadOnly && item.label === "Meterbase" && (
                                 <View className="flex flex-row items-center mt-2">
                                     {locationLoading.Meterbase && (
@@ -799,7 +764,6 @@ const DetailsScreen = () => {
                                     {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
                                 </View>
                             )}
-
                             {!isReadOnly && item.label === "Pole Images" && (
                                 <View className="flex flex-row items-center mt-2">
                                     {locationLoading["Pole Images"] && (
@@ -816,7 +780,6 @@ const DetailsScreen = () => {
                                     {errorMsg && <Text className="text-sm text-red-500 ml-2">{errorMsg}</Text>}
                                 </View>
                             )}
-
                             {!isReadOnly && selectedImages[item.label]?.length > 0 && (
                                 <View className="mt-2">
                                     <Text className="text-md font-medium text-blue-600 mb-1">New:</Text>
@@ -911,7 +874,6 @@ const DetailsScreen = () => {
                                     )}
                                 </View>
                             )}
-
                             {imagesByType[item.label] && imagesByType[item.label].length > 0 ? (
                                 <View className="mt-2">
                                     <Text className="text-md font-medium text-green-600 mb-1">Saved:</Text>

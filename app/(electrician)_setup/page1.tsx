@@ -6,8 +6,10 @@ import StackScreen from "./_stackscreen";
 
 // Constants remain the same
 export const ClientType = ["New", "Existing"];
-export const NewClientOptions = ["PERMANENT", "SEPARATION OF METER", "TEMPORARY", "TFC"];
-export const ExistingClientOptions = ["CHANGE NAME", "DOWNGRADE LOAD", "RE-CON & CHANGE NAME", "RE-CONNECTION", "TLM", "UPGRADE LOAD"];
+export const NewClientOptions = ["NEW CONNECTION", "SEPARATION OF METER", "TEMPORARY FOR CONSTRUCTION"];
+
+export const ExistingClientOptions = ["PERMANENT", "RECON IN-ACTIVE", "TRANSFER LOCATION OF METER"];
+
 export const ClassType = ["GOVERNMENT", "NON-RESIDENTIAL", "RESIDENTIAL"];
 export const CustomerType = ["Business", "Person"];
 export const BusinessType = ["COOPERATIVE", "CORPORATION", "MARKET STALL", "PARTNERSHIP", "SOLE PROPRIETORSHIP"];

@@ -30,19 +30,8 @@ export default function Navbar({ title, nextRoute, nextLabel, onNext, handleFunc
                 router.replace(nextRoute as any);
             }
         } catch (error) {
-            console.error("Error during handleNextPress:", error);
-            Alert.alert("Error", "An unexpected error occurred. Please try again.");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const getNextLabelClasses = () => {
-        let baseClasses = "mr-3 text-lg";
-        if (nextLabel === "Endorse") {
-            return `${baseClasses} font-black text-blue-700`;
-        } else {
-            return `${baseClasses} font-semibold`;
         }
     };
 
@@ -60,12 +49,14 @@ export default function Navbar({ title, nextRoute, nextLabel, onNext, handleFunc
                     {loading ? (
                         <ActivityIndicator size="large" color="black" />
                     ) : (
-                        <Text className={getNextLabelClasses()}>{nextLabel === "Endorse" ? nextLabel.toUpperCase() : nextLabel}</Text>
+                        <Text className={`mr-3 text-lg font-semibold ${nextLabel === "Endorse" ? "text-blue-600 font-extrabold uppercase" : ""}`}>
+                            {nextLabel}
+                        </Text>
                     )}
-                    {!loading && <Ionicons name={iconName} size={28} color={nextLabel === "Endorse" ? "blue" : "black"} />}
+                    <Ionicons name={iconName} size={28} color="black" />
                 </TouchableOpacity>
             ) : (
-                <View className="w-12 h-10" />
+                <View className="w-12" />
             )}
         </View>
     );

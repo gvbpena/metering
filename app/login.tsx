@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, TextInput, Image, Pressable, ActivityIndicator, Text, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import useProfile from "@/services/profile";
 
@@ -121,7 +121,7 @@ export default function LoginScreen() {
             </View>
 
             <View className="mb-4 bg-white border border-gray-200 rounded-xl flex-row items-center px-4 py-3 shadow-sm">
-                <Icon name="account" size={22} color="gray" />
+                <MaterialCommunityIcons name="account" size={22} color="gray" />
                 <TextInput
                     placeholder="Username"
                     placeholderTextColor="#A0A0A0"
@@ -133,7 +133,7 @@ export default function LoginScreen() {
             </View>
 
             <View className="mb-4 bg-white border border-gray-200 rounded-xl flex-row items-center px-4 py-3 shadow-sm">
-                <Icon name="lock" size={22} color="gray" />
+                <MaterialCommunityIcons name="lock" size={22} color="gray" />
                 <TextInput
                     placeholder="Password"
                     placeholderTextColor="#A0A0A0"
@@ -143,7 +143,7 @@ export default function LoginScreen() {
                     onChangeText={setPassword}
                 />
                 <Pressable onPress={() => setShowPassword((prev) => !prev)}>
-                    <Icon name={showPassword ? "eye-off" : "eye"} size={22} color="gray" />
+                    <MaterialCommunityIcons name={showPassword ? "eye-off" : "eye"} size={22} color="gray" />
                 </Pressable>
             </View>
 

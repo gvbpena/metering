@@ -7,7 +7,6 @@ export default function RootLayout() {
         <ElectricianSetupProvider>
             <Stack>
                 <Stack.Screen name="[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="show_location" options={{ headerShown: false }} />
                 <Stack.Screen name="consent" options={{ headerShown: false }} />
                 <Stack.Screen name="consent_signature" options={{ headerShown: false }} />
                 <Stack.Screen name="edit_page" options={{ headerShown: false }} />

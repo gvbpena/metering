@@ -1,14 +1,14 @@
-import { Tabs } from "expo-router";
-import { SyncProvider } from "@/context/_syncContextv2";
 import { NetworkProvider } from "@/context/_internetStatusContext";
-import { View, Text, ActivityIndicator, Linking, Alert, Image, TouchableOpacity, BackHandler } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Constants from "expo-constants";
-import React, { useState, useEffect } from "react";
+import { SyncProvider } from "@/context/_syncContextv2";
+import useProfile from "@/services/profile";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
-import useProfile from "@/services/profile";
+import Constants from "expo-constants";
+import { Tabs } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, BackHandler, Image, Linking, Text, TouchableOpacity, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 export default function RootLayout() {
     return (
@@ -16,7 +16,7 @@ export default function RootLayout() {
             <NetworkProvider>
                 <SyncProvider>
                     <Tabs
-                        tabBar={(props) => <AnimatedTabBar {...props} />}
+                        // tabBar={(props) => <AnimatedTabBar {...props} />}
                         screenOptions={{
                             headerTitle: () => <NetworkStatusTitle />,
                         }}
@@ -43,11 +43,12 @@ export default function RootLayout() {
 }
 
 const NetworkStatusTitle = () => {
+    const { data } = useProfile();
     const version = Constants.expoConfig?.version || "?.?.?";
     const [updateStatus, setUpdateStatus] = useState<string | null>("Checking...");
     const [updateUrl, setUpdateUrl] = useState<string | null>(null);
     const [alertShown, setAlertShown] = useState(false);
-    const { data } = useProfile();
+
     useEffect(() => {
         if (!data || !data[0]?.id) return;
 
@@ -60,11 +61,11 @@ const NetworkStatusTitle = () => {
                 });
 
                 const result = await response.json();
-
-                if (result.success === "User is not authorized") {
+                if (!result.success && result.status !== "authorized") {
+                    setAlertShown(true);
                     Alert.alert(
                         "Account Status",
-                        "Your account is not authorized. Please Contact Support",
+                        "Your account is not authorized. Please contact support.",
                         [
                             {
                                 text: "OK",
@@ -127,49 +128,6 @@ const NetworkStatusTitle = () => {
             ) : updateStatus && updateStatus !== "Up to date" ? (
                 <Text className="text-sm text-orange-500 ml-2">{updateStatus}</Text>
             ) : null}
-        </View>
-    );
-};
-
-const AnimatedTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-    const scales = state.routes.map((_, index) => useSharedValue(state.index === index ? 1.2 : 1));
-
-    useEffect(() => {
-        scales.forEach((scale, i) => {
-            scale.value = withTiming(state.index === i ? 1.2 : 1, { duration: 200 });
-        });
-    }, [state.index]);
-
-    return (
-        <View className="flex-row h-[60px] border-t border-gray-200 bg-white">
-            {state.routes.map((route, index) => {
-                const { options } = descriptors[route.key];
-                const label = options.title ?? route.name;
-                const isFocused = state.index === index;
-
-                const onPress = () => {
-                    if (!isFocused) {
-                        navigation.navigate(route.name);
-                    }
-                };
-
-                const icon = options.tabBarIcon?.({
-                    color: isFocused ? "#0066A0" : "gray",
-                    size: 18,
-                    focused: isFocused,
-                });
-
-                const animatedStyle = useAnimatedStyle(() => ({
-                    transform: [{ scale: scales[index].value }],
-                }));
-
-                return (
-                    <TouchableOpacity key={index} onPress={onPress} className="flex-1 items-center justify-center" activeOpacity={0.7}>
-                        <Animated.View style={animatedStyle}>{icon}</Animated.View>
-                        <Text className={`text-sm mt-1 ${isFocused ? "text-[#0066A0] font-semibold" : "text-gray-400"}`}>{label}</Text>
-                    </TouchableOpacity>
-                );
-            })}
         </View>
     );
 };

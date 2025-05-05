@@ -1,13 +1,14 @@
 import { Tabs } from "expo-router";
 import { SyncProvider } from "@/context/_syncContextv2";
 import { NetworkProvider } from "@/context/_internetStatusContext";
-import { View, Text, ActivityIndicator, Linking, Alert, Image, TouchableOpacity } from "react-native";
+import { View, Text, ActivityIndicator, Linking, Alert, Image, TouchableOpacity, BackHandler } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Constants from "expo-constants";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import useProfile from "@/services/profile";
 
 export default function RootLayout() {
     return (
@@ -46,8 +47,41 @@ const NetworkStatusTitle = () => {
     const [updateStatus, setUpdateStatus] = useState<string | null>("Checking...");
     const [updateUrl, setUpdateUrl] = useState<string | null>(null);
     const [alertShown, setAlertShown] = useState(false);
-
+    const { data } = useProfile();
     useEffect(() => {
+        if (!data || !data[0]?.id) return;
+
+        const checkAccountStatus = async () => {
+            try {
+                const response = await fetch("https://genius-dev.aboitizpower.com/mygenius2/metering_api/metering_update/metering_check_status.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ user_id: data[0].id }),
+                });
+
+                const result = await response.json();
+
+                if (result.success === "User is not authorized") {
+                    Alert.alert(
+                        "Account Status",
+                        "Your account is not authorized. Please Contact Support",
+                        [
+                            {
+                                text: "OK",
+                                onPress: () => {
+                                    BackHandler.exitApp();
+                                },
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+            } catch (error) {
+                console.error("Error checking account status:", error);
+                Alert.alert("Error", "Failed to check account status.");
+            }
+        };
+
         const checkForUpdate = async () => {
             if (!version || version === "?.?.?") return;
 
@@ -79,13 +113,14 @@ const NetworkStatusTitle = () => {
             }
         };
 
+        checkAccountStatus();
         checkForUpdate();
-    }, [version]);
+    }, [data, version]);
 
     return (
         <View className="flex-row items-center">
-            <Image source={require("@/assets/images/get-logov3(header).png")} className="w-16 h-16" resizeMode="contain" />
-            <Text className="text-2xl font-extrabold text-black">Genius Electrician Tool</Text>
+            <Image source={require("@/assets/images/newlogo.png")} className="w-16 h-16" resizeMode="contain" />
+            <Text className="text-2xl font-extrabold text-black">Electrician Tool</Text>
             <Text className="text-sm text-gray-500 ml-2">v{version}</Text>
             {updateStatus === "Checking..." ? (
                 <ActivityIndicator size="small" color="#666" style={{ marginLeft: 8 }} />

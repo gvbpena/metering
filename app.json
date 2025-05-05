@@ -2,9 +2,9 @@
     "expo": {
         "name": "GET",
         "slug": "metering",
-        "version": "1.0.5",
+        "version": "1.0.7",
         "orientation": "portrait",
-        "icon": "./assets/images/get-logov3(logo).png",
+        "icon": "./assets/images/newlogo.png",
         "scheme": "myapp",
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
@@ -17,7 +17,7 @@
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/images/get-logov3(logo).png",
+                "foregroundImage": "./assets/images/newlogo.png",
                 "backgroundColor": "#ffffff"
             },
             "package": "com.gvbpena.get"
@@ -25,14 +25,14 @@
         "web": {
             "bundler": "metro",
             "output": "static",
-            "favicon": "./assets/images/get-logov3.png"
+            "favicon": "./assets/images/newlogo.png"
         },
         "plugins": [
             "expo-router",
             [
                 "expo-splash-screen",
                 {
-                    "image": "./assets/images/get-logov3.png",
+                    "image": "./assets/images/newlogo.png",
                     "imageWidth": 200,
                     "resizeMode": "contain",
                     "backgroundColor": "#ffffff"

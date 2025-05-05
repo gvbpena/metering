@@ -116,8 +116,8 @@ export default function LoginScreen() {
     return (
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-gray-50 justify-center px-6">
             <View className="items-center mb-8">
-                <Image source={require("../assets/images/get-logov3.png")} style={{ width: 160, height: 160, resizeMode: "contain" }} />
-                <Text className="text-2xl font-semibold text-gray-900 mt-3">Genius Electrician Tool</Text>
+                <Image source={require("../assets/images/newlogo.png")} style={{ width: 160, height: 160, resizeMode: "contain" }} />
+                <Text className="text-2xl font-semibold text-gray-900 mt-3">Electrician Tool</Text>
             </View>
 
             <View className="mb-4 bg-white border border-gray-200 rounded-xl flex-row items-center px-4 py-3 shadow-sm">
